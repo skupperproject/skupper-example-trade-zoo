@@ -20,10 +20,10 @@
 import asyncio
 import json
 import kafka
+import threading
+import time
 
 from data import *
-from threading import Thread
-from time import sleep
 
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
@@ -57,7 +57,7 @@ def process_order(order):
 
     producer.send("updates", order.json().encode("ascii"))
 
-    sleep(1)
+    time.sleep(1)
 
     buy_order = None
     sell_order = None
@@ -123,9 +123,11 @@ def execute_trade(buy_order, sell_order):
     producer.send("updates", buyer.json().encode("ascii"))
     producer.send("updates", seller.json().encode("ascii"))
 
+    print(f"{process_id}: Executed {trade}")
+
 if __name__ == "__main__":
-    update_thread = Thread(target=consume_updates, daemon=True)
-    order_thread = Thread(target=consume_orders, daemon=True)
+    update_thread = threading.Thread(target=consume_updates, daemon=True)
+    order_thread = threading.Thread(target=consume_orders, daemon=True)
 
     update_thread.start()
     order_thread.run()
