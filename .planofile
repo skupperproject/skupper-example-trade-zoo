@@ -1,0 +1,23 @@
+@command(name="run")
+def run_(app):
+    with working_dir("order-processor"):
+        order1 = start("python3 main.py")
+        order2 = start("python3 main.py")
+
+    with working_dir("frontend"):
+        frontend1 = start("python3 main.py 8080")
+        frontend2 = start("python3 main.py 8081")
+
+    try:
+        while True:
+            sleep(86400)
+    finally:
+        kill(order1)
+        kill(order2)
+        kill(frontend1)
+        kill(frontend2)
+
+@command
+def clean(app):
+    for dir in find(".", "__pycache__"):
+        remove(dir)

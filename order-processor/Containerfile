@@ -1,0 +1,8 @@
+FROM registry.fedoraproject.org/fedora-minimal:34
+
+RUN microdnf -y install python3 && microdnf clean all
+
+ADD main.py /app/main.py
+ADD data.py /app/data.py
+
+ENTRYPOINT ["python3", "/app/main.py"]

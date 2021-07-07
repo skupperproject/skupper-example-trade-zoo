@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Trade Zoo</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/main.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" defer="defer">
+    <script src="/static/gesso.js"></script>
+    <script src="/static/main.js"></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <a id="logotype" href="">
+          <span class="material-icons-outlined">swap_horiz</span>
+          Trade Zoo
+        </a>
+        <nav id="global-nav">
+          <a>Hi, <b id="user">-</b></a>
+          <a id="reset" href="/"><span class="material-icons-outlined">refresh</span></a>
+        </nav>
+      </div>
+    </header>
+    <section>
+      <div>
+
+<div id="top">
+  <div>
+    <h2>Positions</h2>
+
+    <div id="positions">
+      <div>
+        <h4>Pennies</h4>
+        <div id="pennies">-</div>
+      </div>
+
+      <div>
+        <h4>Crackers</h4>
+        <div id="crackers">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Buy and sell crackers</h2>
+
+    <form id="order-form" method="post" action="/api/send-order">
+      <div>
+        <h4>Quantity</h4>
+        <input name="quantity" type="number" min="0" value="1" onclick="this.select()"/>
+      </div>
+
+      <div>
+        <h4>Price per cracker</h4>
+        <input name="price" type="number" min="0" value="1" onclick="this.select()"/>
+      </div>
+
+      <div>
+        <h4>Actions</h4>
+        <button name="action" type="submit" value="buy">Buy</button>
+        <button name="action" type="submit" value="sell">Sell</button>
+      </div>
+    </form>
+  </div>
+
+  <div>
+    <h2>Market price</h2>
+
+    <div id="market-prices">
+      <div>
+        <h4>Current</h4>
+        <div id="current">-</div>
+      </div>
+
+      <div>
+        <h4>Average</h4>
+        <div id="average">-</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr/>
+
+<h2>Open orders</h2>
+
+<div id="orders"></div>
+
+<hr/>
+
+<h2>Completed trades</h2>
+
+<div id="trades"></div>
+
+      </div>
+    </section>
+    <footer>
+      <div>
+      </div>
+    </footer>
+  </body>
+</html>
