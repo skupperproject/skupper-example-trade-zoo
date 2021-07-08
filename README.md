@@ -1,8 +1,8 @@
-# Deploy Trade Zoo using Skupper
+# Trade Zoo with Kafka and Skupper
 
 [![main](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml)
 
-#### A simple trading application that runs in the public cloud but stores data in a private Kafka cluster
+#### A simple trading application that runs in the public cloud but keeps its data in a private Kafka cluster
 
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
