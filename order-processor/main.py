@@ -20,11 +20,14 @@
 import asyncio
 import json
 import kafka
+import logging
 import os
 import threading
 import time
 
 from data import *
+
+logging.basicConfig(level=logging.INFO)
 
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
