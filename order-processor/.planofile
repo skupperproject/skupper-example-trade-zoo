@@ -1,0 +1,10 @@
+image_tag = "quay.io/ssorj/trade-zoo-kafka-order-processor"
+
+@command
+def build_image(app):
+    run(f"podman build -t {image_tag} .")
+
+@command
+def push_image(app):
+    build_image(app)
+    run(f"podman push {image_tag}")
