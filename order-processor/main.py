@@ -117,7 +117,7 @@ def execute_trade(buy_order, sell_order):
     buyer.crackers += trade.quantity
 
     seller = asyncio.run(store.await_item(User, trade.seller_id))
-    seller.pennies -= trade.quantity * trade.price
+    seller.pennies += trade.quantity * trade.price
     seller.crackers -= trade.quantity
 
     producer.send("updates", trade.json().encode("ascii"))
