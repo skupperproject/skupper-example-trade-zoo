@@ -34,6 +34,9 @@ from threading import Thread
 from animalid import generate_animal_id
 from data import *
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
 process_id = f"frontend-{unique_id()}"
 store = DataStore()
 update_queues = set()
