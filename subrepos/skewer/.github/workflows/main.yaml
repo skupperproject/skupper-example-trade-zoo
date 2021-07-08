@@ -1,0 +1,17 @@
+name: main
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: manusa/actions-setup-minikube@v2.4.1
+        with:
+          minikube version: 'v1.21.0'
+          kubernetes version: 'v1.21.1'
+          github token: ${{ secrets.GITHUB_TOKEN }}
+      - run: mkdir -p "$HOME/.local/bin"
+      - run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - run: curl -fL https://github.com/skupperproject/skupper/releases/download/0.6.0/skupper-cli-0.6.0-linux-amd64.tgz | tar -C "$HOME/.local/bin" -xzf -
+      - run: ./plano test
