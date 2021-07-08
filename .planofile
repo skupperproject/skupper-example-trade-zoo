@@ -1,3 +1,5 @@
+from skewer import *
+
 @command(name="run")
 def run_(app):
     with working_dir("order-processor"):
@@ -7,7 +9,7 @@ def run_(app):
     with working_dir("frontend"):
         frontend1 = start("python3 main.py")
 
-        with working_env(FRONTEND_SERVICE_PORT=8081):
+        with working_env(HTTP_PORT=8081):
             frontend2 = start("python3 main.py")
 
     try:
@@ -23,3 +25,32 @@ def run_(app):
 def clean(app):
     for dir in find(".", "__pycache__"):
         remove(dir)
+
+@command
+def generate(app):
+    """
+    Generate README.md from the data in skewer.yaml
+    """
+    generate_readme("skewer.yaml", "README.md")
+
+@command
+def render(app):
+    """
+    Render README.html from the data in skewer.yaml
+    """
+    check_program("pandoc")
+
+    generate(app)
+
+    run(f"pandoc -o README.html README.md")
+
+    print(f"file:{get_real_path('README.html')}")
+
+@command
+def test(app):
+    generate_readme("skewer.yaml", make_temp_file())
+    run_steps_on_minikube("skewer.yaml")
+
+@command
+def test_external(app, public_kubeconfig, private_kubeconfig):
+    run_steps_external("skewer.yaml", public=public_kubeconfig, private=private_kubeconfig)

@@ -62,8 +62,8 @@ def consume_updates():
 
 ## HTTP
 
-http_host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
-http_port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
+http_host = os.environ.get("HTTP_HOST", "0.0.0.0")
+http_port = int(os.environ.get("HTTP_PORT", 8080))
 
 star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")

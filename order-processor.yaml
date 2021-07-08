@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: order-processor
+  name: order-processor
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-processor
+  template:
+    metadata:
+      labels:
+        app: order-processor
+    spec:
+      containers:
+        - name: order-processor
+          image: quay.io/ssorj/trade-zoo-kafka-order-processor
+          env:
+            - name: KAFKA_SERVICE_BOOTSTRAP_SERVERS
+              value: cluster1-kafka-brokers:9092
