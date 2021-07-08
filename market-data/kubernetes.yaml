@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: market-data
+  name: market-data
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: market-data
+  template:
+    metadata:
+      labels:
+        app: market-data
+    spec:
+      containers:
+        - name: market-data
+          image: quay.io/ssorj/trade-zoo-kafka-market-data
+          env:
+            - name: KAFKA_SERVICE_BOOTSTRAP_SERVERS
+              value: cluster1-kafka-brokers:9092

@@ -6,14 +6,18 @@ overview: |
   use Skupper to access a Kafka cluster at a remote site without
   exposing it to the public internet.
 
-  It contains three services:
+  It contains four services:
 
   * A Kafka cluster running in a private data center.  The cluster has
     two topics, "orders" and "updates".
 
   * An order processor running in the public cloud.  It consumes from
-    "orders", matching buy and sell offers to make trades.  New and
-    updated orders and trades are published to "updates".
+    "orders", matching buy and sell offers to make trades.  It
+    publishes new and updated orders and trades to "updates".
+
+  * A market data service running in the public cloud.  It looks at
+    the completed trades and computes the latest and average prices,
+    which it then publishes to "updates".
 
   * A web frontend service running in the public cloud.  It submits
     buy and sell orders to "orders" and consumes from "updates" in
