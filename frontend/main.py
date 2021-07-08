@@ -20,6 +20,7 @@
 import asyncio
 import json
 import kafka
+import os
 import sys
 import uvicorn
 
@@ -39,13 +40,14 @@ update_queues = set()
 
 ## Kafka
 
-producer = kafka.KafkaProducer(bootstrap_servers="localhost:9092")
+bootstrap_servers = os.environ.get("KAFKA_SERVICE_BOOTSTRAP_SERVERS", "localhost:9092")
+producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
 
 def consume_updates():
     consumer = kafka.KafkaConsumer("updates",
                                    group_id=process_id,
                                    auto_offset_reset="earliest",
-                                   bootstrap_servers="localhost:9092")
+                                   bootstrap_servers=bootstrap_servers)
 
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
@@ -59,6 +61,9 @@ def consume_updates():
             asyncio.run(queue.put(item))
 
 ## HTTP
+
+http_host = os.environ.get("FRONTEND_SERVICE_HOST", "0.0.0.0")
+http_port = int(os.environ.get("FRONTEND_SERVICE_PORT", 8080))
 
 star = Starlette(debug=True)
 star.mount("/static", StaticFiles(directory="static"), name="static")
@@ -114,12 +119,7 @@ async def send_order(request):
     return JSONResponse({"error": None})
 
 if __name__ == "__main__":
-    try:
-        port = int(sys.argv[1])
-    except KeyError:
-        port = 8080
-
     update_thread = Thread(target=consume_updates, daemon=True)
     update_thread.start()
 
-    uvicorn.run(star, host="0.0.0.0", port=port, log_level="info")
+    uvicorn.run(star, host=http_host, port=http_port, log_level="info")

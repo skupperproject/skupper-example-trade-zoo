@@ -5,8 +5,10 @@ def run_(app):
         order2 = start("python3 main.py")
 
     with working_dir("frontend"):
-        frontend1 = start("python3 main.py 8080")
-        frontend2 = start("python3 main.py 8081")
+        frontend1 = start("python3 main.py")
+
+        with working_env(FRONTEND_SERVICE_PORT=8081):
+            frontend2 = start("python3 main.py")
 
     try:
         while True:

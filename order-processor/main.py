@@ -20,6 +20,7 @@
 import asyncio
 import json
 import kafka
+import os
 import threading
 import time
 
@@ -27,13 +28,15 @@ from data import *
 
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
-producer = kafka.KafkaProducer(bootstrap_servers="localhost:9092")
+
+bootstrap_servers = os.environ.get("KAFKA_SERVICE_BOOTSTRAP_SERVERS", "localhost:9092")
+producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
 
 def consume_updates():
     consumer = kafka.KafkaConsumer("updates",
                                    group_id=process_id,
                                    auto_offset_reset="earliest",
-                                   bootstrap_servers="localhost:9092")
+                                   bootstrap_servers=bootstrap_servers)
 
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
@@ -46,7 +49,7 @@ def consume_updates():
 def consume_orders():
     consumer = kafka.KafkaConsumer("orders",
                                    group_id="order-processors",
-                                   bootstrap_servers="localhost:9092")
+                                   bootstrap_servers=bootstrap_servers)
 
     for message in consumer:
         order = Order(data=json.loads(message.value))
