@@ -1,24 +1,29 @@
-title: Accessing a Kafka cluster using Skupper
-subtitle: Use public cloud resources to process data from a private Kafka cluster
+title: Deploy Trade Zoo using Skupper and Kafka
+subtitle: |
+  A simple trading application that runs in the public cloud but
+  stores data in a private Kafka cluster
 github_actions_url: https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml
-overview: |-
-  XXX
-
+overview: |
   This example is a simple Kafka application that shows how you can
   use Skupper to access a Kafka cluster at a remote site without
   exposing it to the public internet.
 
-  It contains two services:
+  It contains three services:
 
-  * A Kafka cluster named "cluster1" running in a private data center.
-    The cluster has a topic named "topic1".
+  * A Kafka cluster running in a private data center.  The cluster has
+    two topics, "orders" and "updates".
 
-  * A Kafka client running in the public cloud.  It sends 10 messages
-    to "topic1" and then receives them back.
+  * An order processor running in the public cloud.  It consumes from
+    "orders", matching buy and sell offers to make trades.  New and
+    updated orders and trades are published to "updates".
+
+  * A web frontend service running in the public cloud.  It submits
+    buy and sell orders to "orders" and consumes from "updates" in
+    order to show what's happening.
 
   To set up the Kafka cluster, this example uses the Kubernetes
-  operator from the [Strimzi][strimzi] project.  The Kafka client is a
-  Java application built using [Quarkus][quarkus].
+  operator from the [Strimzi][strimzi] project.  The other services
+  are small Python programs.
 
   The example uses two Kubernetes namespaces, "private" and "public",
   to represent the private data center and public cloud.
