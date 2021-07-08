@@ -23,6 +23,23 @@ spec:
     replicas: 1
     storage:
       type: ephemeral
-  entityOperator:
-    topicOperator: {}
-    userOperator: {}
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: updates
+  labels:
+    strimzi.io/cluster: cluster1
+spec:
+  partitions: 1
+  replicas: 1
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: orders
+  labels:
+    strimzi.io/cluster: cluster1
+spec:
+  partitions: 3
+  replicas: 1
