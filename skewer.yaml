@@ -97,8 +97,8 @@ steps:
   - title: XXX
     commands:
       public:
-        - run: kubectl apply -f order-processor/order-processor.yaml
-        - run: kubectl apply -f frontend/frontend.yaml
+        - run: kubectl apply -f order-processor/kubernetes.yaml
+        - run: kubectl apply -f frontend/kubernetes.yaml
           sleep: 86400
 cleaning_up:
   preamble: !string cleaning_up_preamble
@@ -109,6 +109,6 @@ cleaning_up:
       - run: kubectl delete -f kafka-cluster/strimzi.yaml
     public:
       - run: skupper delete
-      - run: kubectl delete -f frontend/frontend.yaml
-      - run: kubectl delete -f order-processor/order-processor.yaml
+      - run: kubectl delete -f frontend/kubernetes.yaml
+      - run: kubectl delete -f order-processor/kubernetes.yaml
 next_steps: !string next_steps
