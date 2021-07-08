@@ -76,12 +76,9 @@ steps:
       operator and deploy the cluster and topic.
     commands:
       private:
-        - run: kubectl create -f strimzi.yaml
-        - run: kubectl apply -f cluster1.yaml
+        - run: kubectl create -f kafka-cluster/strimzi.yaml
+        - run: kubectl apply -f kafka-cluster/cluster1.yaml
         - run: kubectl wait --for condition=ready --timeout 540s kafka/cluster1
-        # - run: kubectl apply -f topics.yaml
-        #   sleep: 10
-        # - run: kubectl wait --for condition=ready --timeout 180s kafka/topic1
   - title: Expose the Kafka cluster
     preamble: |-
       In the private namespace, use `skupper expose` with the
@@ -97,30 +94,21 @@ steps:
       public:
         - run: kubectl get services
           await: [service/cluster1-kafka-brokers]
-  # - title: Run the client program
-  #   preamble: |-
-  #     Use the `kubectl run` command to execute the client program in
-  #     the public namespace.
-  #   commands:
-  #     public:
-  #       - run: kubectl run client --attach --rm --restart Never --image quay.io/skupper/kafka-example-client --env BOOTSTRAP_SERVERS=cluster1-kafka-brokers:9092
-  #   postamble: |-
-  #     To see the client code, look in the [client
-  #     subdirectory](client) of this project.
   - title: XXX
     commands:
       public:
-        - run: kubectl apply -f order-processor.yaml
-        - run: kubectl apply -f frontend.yaml
+        - run: kubectl apply -f order-processor/order-processor.yaml
+        - run: kubectl apply -f frontend/frontend.yaml
           sleep: 86400
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:
     private:
       - run: skupper delete
-      - run: kubectl delete -f topics.yaml
-      - run: kubectl delete -f cluster1.yaml
-      - run: kubectl delete -f strimzi.yaml
+      - run: kubectl delete -f kafka-cluster/cluster1.yaml
+      - run: kubectl delete -f kafka-cluster/strimzi.yaml
     public:
       - run: skupper delete
+      - run: kubectl delete -f frontend/frontend.yaml
+      - run: kubectl delete -f order-processor/order-processor.yaml
 next_steps: !string next_steps
