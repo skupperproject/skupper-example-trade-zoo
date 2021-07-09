@@ -19,6 +19,7 @@
 
 #positions > div:not(:last-child) {
     margin-right: 2em;
+    width: 3em;
 }
 
 #positions > div > div {
@@ -47,6 +48,7 @@
 
 #market-prices > div:not(:last-child) {
     margin-right: 2em;
+    width: 3em;
 }
 
 #market-prices > div > div {
