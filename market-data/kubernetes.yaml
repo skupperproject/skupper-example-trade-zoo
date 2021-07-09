@@ -18,5 +18,5 @@ spec:
         - name: market-data
           image: quay.io/ssorj/trade-zoo-kafka-market-data
           env:
-            - name: KAFKA_SERVICE_BOOTSTRAP_SERVERS
+            - name: KAFKA_BOOTSTRAP_SERVERS
               value: cluster1-kafka-brokers:9092

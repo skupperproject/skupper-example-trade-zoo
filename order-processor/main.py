@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.INFO)
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
 
-bootstrap_servers = os.environ.get("KAFKA_SERVICE_BOOTSTRAP_SERVERS", "localhost:9092")
+bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
 
 def consume_updates():
