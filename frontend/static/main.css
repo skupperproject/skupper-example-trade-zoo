@@ -3,11 +3,11 @@
 @import url("/static/tables.css");
 @import url("/static/forms.css");
 
-#top {
+#top-tile {
     display: flex;
 }
 
-#top > div:not(:last-child) {
+#top-tile > div:not(:last-child) {
     padding-right: 2em;
     margin-right: 2em;
     border-right: 1px solid var(--light-gray);
@@ -70,7 +70,6 @@ button {
 
 #orders, #trades {
     overflow-y: scroll;
-    height: 6em;
 }
 
 h2 {
@@ -78,7 +77,7 @@ h2 {
 }
 
 section {
-    margin: 1em 0 2em 0;
+    margin: 0;
 }
 
 hr {
@@ -92,5 +91,26 @@ span.material-icons-outlined {
 
 table {
     width: 100%;
-    table-layout: fixed;
+}
+
+html, body, section, section > div, #bottom-tile, #order-tile, #trade-tile {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+html, body, section, section > div {
+    height: 100%;
+}
+
+#bottom-tile {
+    flex-grow: 1;
+}
+
+#order-tile, #trade-tile {
+    margin-top: 2em;
+    border-top: 1px solid var(--light-gray);
+    padding-top: 2em;
+    overflow: auto;
+    height: 50%;
 }
