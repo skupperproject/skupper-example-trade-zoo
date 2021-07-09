@@ -67,7 +67,7 @@ def update_prices():
 
     prev = store.get_item(MarketData, "crackers")
 
-    if prev and (curr.bid_price != prev.bid_price or curr.ask_price != prev.ask_price):
+    if not prev or (prev and (curr.bid_price != prev.bid_price or curr.ask_price != prev.ask_price)):
         producer.send("updates", curr.json().encode("ascii"))
 
         print(f"{process_id}: Updated market prices")

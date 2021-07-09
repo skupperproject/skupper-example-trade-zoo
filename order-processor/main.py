@@ -88,7 +88,7 @@ def find_matching_sell_order(buy_order):
                    if x.action == "sell"
                    and x.user_id != buy_order.user_id
                    and x.quantity == buy_order.quantity
-                   and x.price == buy_order.price
+                   and x.price <= buy_order.price
                    and x.status == "open"]
 
     if sell_orders:
@@ -99,7 +99,7 @@ def find_matching_buy_order(sell_order):
                   if x.action == "buy"
                   and x.user_id != sell_order.user_id
                   and x.quantity == sell_order.quantity
-                  and x.price == sell_order.price
+                  and x.price >= sell_order.price
                   and x.status == "open"]
 
     if buy_orders:
@@ -109,8 +109,8 @@ def execute_trade(buy_order, sell_order):
     trade = Trade()
     trade.buyer_id = buy_order.user_id
     trade.seller_id = sell_order.user_id
-    trade.quantity = buy_order.quantity
-    trade.price = buy_order.price
+    trade.quantity = sell_order.quantity
+    trade.price = sell_order.price
 
     buy_order.status = "filled"
     sell_order.status = "filled"

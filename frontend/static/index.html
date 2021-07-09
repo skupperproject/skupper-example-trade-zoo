@@ -47,12 +47,12 @@
     <form id="order-form" method="post" action="/api/send-order">
       <div>
         <h4>Quantity</h4>
-        <input name="quantity" type="number" min="0" value="1" required="required" onclick="this.select()"/>
+        <input name="quantity" type="number" min="1" value="1" required="required" onclick="this.select()"/>
       </div>
 
       <div>
-        <h4>Price per cracker</h4>
-        <input name="price" type="number" min="0" value="10" required="required" onclick="this.select()"/>
+        <h4>Limit price</h4>
+        <input name="price" type="number" min="1" value="10" required="required" onclick="this.select()"/>
       </div>
 
       <div>
