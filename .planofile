@@ -6,6 +6,10 @@ def run_(app):
         order1 = start("python3 main.py")
         order2 = start("python3 main.py")
 
+    with working_dir("market-data"):
+        market1 = start("python3 main.py")
+        market2 = start("python3 main.py")
+
     with working_dir("frontend"):
         frontend1 = start("python3 main.py")
 
@@ -18,6 +22,8 @@ def run_(app):
     finally:
         kill(order1)
         kill(order2)
+        kill(market1)
+        kill(market2)
         kill(frontend1)
         kill(frontend2)
 
