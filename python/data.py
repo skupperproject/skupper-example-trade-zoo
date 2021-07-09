@@ -32,8 +32,8 @@ _log = _logging.getLogger("data")
 class DataItem:
     def __init__(self, data=None, id=None):
         if data is not None:
-            for name in _attribute_names(self):
-                setattr(self, name, data.get(name, getattr(self, name)))
+            for name, default in _item_attributes(self).items():
+                setattr(self, name, data.get(name, default))
 
         if id is not None:
             self.id = id
@@ -45,15 +45,10 @@ class DataItem:
         return f"{self.__class__.__name__}({self.id})"
 
     def data(self):
-        data_ = {
-            "class": self.__class__.__name__,
-            "id": self.id,
-        }
+        attrs = _item_attributes(self)
+        attrs["class"] = self.__class__.__name__
 
-        for name in _attribute_names(self):
-            data_[name] = getattr(self, name)
-
-        return data_
+        return attrs
 
     def json(self):
         return _json.dumps(self.data())
@@ -67,8 +62,8 @@ class DataItem:
 
         return cls(data)
 
-def _attribute_names(obj):
-    return [k for k, v in _inspect.getmembers(obj) if not k.startswith("__") and not _inspect.isroutine(v)]
+def _item_attributes(obj):
+    return {k: v for k, v in _inspect.getmembers(obj) if not k.startswith("__") and not _inspect.isroutine(v)}
 
 class DataStore:
     def __init__(self):
@@ -129,6 +124,12 @@ class Trade(DataItem):
     seller_id = None
     quantity = None
     price = None
+
+class MarketData(DataItem):
+    id = None # Always "crackers"
+    bid_price = None
+    ask_price = None
+    spread = None
 
 def unique_id():
     uuid_bytes = _uuid.uuid4().bytes

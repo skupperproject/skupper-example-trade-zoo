@@ -47,12 +47,12 @@
     <form id="order-form" method="post" action="/api/send-order">
       <div>
         <h4>Quantity</h4>
-        <input name="quantity" type="number" min="0" value="1" onclick="this.select()"/>
+        <input name="quantity" type="number" min="0" value="1" required="required" onclick="this.select()"/>
       </div>
 
       <div>
         <h4>Price per cracker</h4>
-        <input name="price" type="number" min="0" value="1" onclick="this.select()"/>
+        <input name="price" type="number" min="0" value="10" required="required" onclick="this.select()"/>
       </div>
 
       <div>
@@ -64,17 +64,22 @@
   </div>
 
   <div>
-    <h2>Market price</h2>
+    <h2>Market prices</h2>
 
     <div id="market-prices">
       <div>
-        <h4>Current</h4>
-        <div id="current">-</div>
+        <h4>Bid</h4>
+        <div id="bid">-</div>
       </div>
 
       <div>
-        <h4>Average</h4>
-        <div id="average">-</div>
+        <h4>Ask</h4>
+        <div id="ask">-</div>
+      </div>
+
+      <div>
+        <h4>Spread</h4>
+        <div id="spread">-</div>
       </div>
     </div>
   </div>

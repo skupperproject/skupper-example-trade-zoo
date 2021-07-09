@@ -49,8 +49,33 @@ def consume_updates():
 
         store.put_item(item)
 
+def update_prices():
+    bid_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "buy"]
+    ask_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "sell"]
+
+    curr = MarketData(id="crackers")
+
+    if bid_prices:
+        curr.bid_price = max(bid_prices)
+
+    if ask_prices:
+        curr.ask_price = min(ask_prices)
+
+    if curr.bid_price and curr.ask_price:
+        midpoint = (curr.bid_price + curr.ask_price) / 2
+        curr.spread = round((curr.ask_price - curr.bid_price) / midpoint * 100)
+
+    prev = store.get_item(MarketData, "crackers")
+
+    if prev and (curr.bid_price != prev.bid_price or curr.ask_price != prev.ask_price):
+        producer.send("updates", curr.json().encode("ascii"))
+
+        print(f"{process_id}: Updated market prices")
+
 if __name__ == "__main__":
     update_thread = threading.Thread(target=consume_updates, daemon=True)
+    update_thread.start()
 
-    # update_thread.start()
-    update_thread.run()
+    while True:
+        time.sleep(1)
+        update_prices()

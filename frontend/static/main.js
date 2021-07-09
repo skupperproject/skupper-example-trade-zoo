@@ -29,11 +29,20 @@ window.addEventListener("load", () => {
     data.set("User", new Map());
     data.set("Order", new Map());
     data.set("Trade", new Map());
+    data.set("MarketData", new Map());
 
     const userId = new URLSearchParams(window.location.search).get("user");
 
     function cap(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function nvl(value, replacement) {
+        if (value === null || value === undefined) {
+            return replacement;
+        }
+
+        return value;
     }
 
     function renderUser() {
@@ -94,8 +103,13 @@ window.addEventListener("load", () => {
             }
 
             const user = users.get(order.user_id);
+            let userName = "-";
 
-            rows.push([order.id, user.name, cap(order.action), order.quantity, order.price, link]);
+            if (user) {
+                userName = user.name;
+            }
+
+            rows.push([order.id, userName, cap(order.action), order.quantity, order.price, link]);
         }
 
         if (!rows.length) {
@@ -132,17 +146,18 @@ window.addEventListener("load", () => {
         gesso.replaceElement($("#trades"), div);
     }
 
-    function renderMarketPrice() {
-        const trades = data.get("Trade");
-        const prices = new Array();
+    function renderMarketPrices() {
+        const market = data.get("MarketData").get("crackers");
 
-        for (let trade of trades.values()) {
-            prices.push(trade.price);
-        }
+        if (market) {
+            $("#bid").textContent = nvl(market.bid_price, "-");
+            $("#ask").textContent = nvl(market.ask_price, "-");
 
-        if (prices.length) {
-            $("#current").textContent = prices[prices.length - 1];
-            $("#average").textContent = Math.round(prices.reduce((a, b) => a + b) / prices.length * 100) / 100;
+            if (market.spread !== null) {
+                $("#spread").textContent = market.spread + "%";
+            } else {
+                $("#spread").textContent = "-";
+            }
         }
     }
 
@@ -160,7 +175,9 @@ window.addEventListener("load", () => {
             break;
         case "Trade":
             renderTrades();
-            renderMarketPrice();
+            break;
+        case "MarketData":
+            renderMarketPrices();
             break;
         }
     };
