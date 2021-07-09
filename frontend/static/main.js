@@ -60,46 +60,12 @@ window.addEventListener("load", () => {
     function renderOrders() {
         const orders = data.get("Order");
         const users = data.get("User");
-        const headings = ["ID", "User", "Offer", "Quantity", "Price", "Actions"];
+        const headings = ["ID", "User", "Offer", "Quantity", "Limit price"];
         const rows = new Array();
 
         for (let order of orders.values()) {
             if (order.status == "filled") {
                 continue;
-            }
-
-            let link = "-";
-
-            if (order.user_id != userId) {
-                link = gesso.createLink(null, "", {class: "order-link"});
-                let action;
-
-                if (order.action == "buy") {
-                    gesso.createText(link, "Sell");
-                    action = "sell";
-                } else {
-                    gesso.createText(link, "Buy");
-                    action = "buy";
-                }
-
-                link.addEventListener("click", event => {
-                    event.preventDefault();
-
-                    const data = {
-                        "user_id": userId,
-                        "action": action,
-                        "quantity": parseInt(order.quantity),
-                        "price": parseInt(order.price),
-                    };
-
-                    fetch("/api/send-order", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(data),
-                    }).then(response => response.json());
-                });
             }
 
             const user = users.get(order.user_id);
@@ -109,7 +75,7 @@ window.addEventListener("load", () => {
                 userName = user.name;
             }
 
-            rows.push([order.id, userName, cap(order.action), order.quantity, order.price, link]);
+            rows.push([order.id, userName, cap(order.action), order.quantity, order.price]);
         }
 
         if (!rows.length) {
@@ -201,3 +167,37 @@ window.addEventListener("load", () => {
         }).then(response => response.json());
     });
 });
+
+// let link = "-";
+
+// if (order.user_id != userId) {
+//     link = gesso.createLink(null, "", {class: "order-link"});
+//     let action;
+
+//     if (order.action == "buy") {
+//         gesso.createText(link, "Sell");
+//         action = "sell";
+//     } else {
+//         gesso.createText(link, "Buy");
+//         action = "buy";
+//     }
+
+//     link.addEventListener("click", event => {
+//         event.preventDefault();
+
+//         const data = {
+//             "user_id": userId,
+//             "action": action,
+//             "quantity": parseInt(order.quantity),
+//             "price": parseInt(order.price),
+//         };
+
+//         fetch("/api/send-order", {
+//             method: "POST",
+//             headers: {
+//                 "Content-Type": "application/json",
+//             },
+//             body: JSON.stringify(data),
+//         }).then(response => response.json());
+//     });
+// }

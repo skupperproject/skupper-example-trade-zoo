@@ -84,9 +84,11 @@ def process_order(order):
     print(f"{process_id}: Processed {order}")
 
 def find_matching_sell_order(buy_order):
+    import pprint
+    pprint.pprint([x.data() for x in store.get_items(Order)])
+
     sell_orders = [x for x in store.get_items(Order)
                    if x.action == "sell"
-                   and x.user_id != buy_order.user_id
                    and x.quantity == buy_order.quantity
                    and x.price <= buy_order.price
                    and x.status == "open"]
@@ -97,7 +99,6 @@ def find_matching_sell_order(buy_order):
 def find_matching_buy_order(sell_order):
     buy_orders = [x for x in store.get_items(Order)
                   if x.action == "buy"
-                  and x.user_id != sell_order.user_id
                   and x.quantity == sell_order.quantity
                   and x.price >= sell_order.price
                   and x.status == "open"]
