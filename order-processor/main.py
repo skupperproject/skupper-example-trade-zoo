@@ -44,10 +44,8 @@ def consume_updates():
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
 
-        if item is None:
-            continue
-
-        store.put_item(item)
+        if item:
+            store.put_item(item)
 
 def consume_orders():
     consumer = kafka.KafkaConsumer("orders",
@@ -84,9 +82,6 @@ def process_order(order):
     print(f"{process_id}: Processed {order}")
 
 def find_matching_sell_order(buy_order):
-    import pprint
-    pprint.pprint([x.data() for x in store.get_items(Order)])
-
     sell_orders = [x for x in store.get_items(Order)
                    if x.action == "sell"
                    and x.quantity == buy_order.quantity
@@ -112,6 +107,7 @@ def execute_trade(buy_order, sell_order):
     trade.seller_id = sell_order.user_id
     trade.quantity = sell_order.quantity
     trade.price = sell_order.price
+    trade.creation_time = time.time()
 
     buy_order.status = "filled"
     sell_order.status = "filled"

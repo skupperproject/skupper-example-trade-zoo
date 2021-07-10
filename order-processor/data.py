@@ -117,6 +117,7 @@ class Order(DataItem):
     quantity = None
     price = None
     status = "open"
+    creation_time = None
 
 class Trade(DataItem):
     id = None
@@ -124,9 +125,11 @@ class Trade(DataItem):
     seller_id = None
     quantity = None
     price = None
+    creation_time = None
 
 class MarketData(DataItem):
-    id = None # Always "crackers"
+    # The ID for this one is always "crackers"
+    id = None
     bid_price = None
     ask_price = None
     spread = None

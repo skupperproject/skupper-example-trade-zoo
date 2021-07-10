@@ -22,6 +22,7 @@ import json
 import kafka
 import logging
 import os
+import sys
 import threading
 import time
 
@@ -29,7 +30,7 @@ from data import *
 
 logging.basicConfig(level=logging.INFO)
 
-process_id = f"market-data-{unique_id()}"
+process_id = f"market-maker-{unique_id()}"
 store = DataStore()
 
 bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
@@ -44,32 +45,8 @@ def consume_updates():
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
 
-        if item is None:
-            continue
-
-        store.put_item(item)
-
-def update_prices():
-    bid_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "buy"]
-    ask_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "sell"]
-
-    curr = MarketData(id="crackers")
-
-    if bid_prices:
-        curr.bid_price = max(bid_prices)
-
-    if ask_prices:
-        curr.ask_price = min(ask_prices)
-
-    if curr.bid_price and curr.ask_price:
-        curr.spread = round((curr.ask_price - curr.bid_price) / curr.ask_price * 100)
-
-    prev = store.get_item(MarketData, "crackers")
-
-    if not prev or (prev and (curr.bid_price != prev.bid_price or curr.ask_price != prev.ask_price)):
-        producer.send("updates", curr.json().encode("ascii"))
-
-        print(f"{process_id}: Updated market prices")
+        if item:
+            store.put_item(item)
 
 if __name__ == "__main__":
     update_thread = threading.Thread(target=consume_updates, daemon=True)
@@ -77,4 +54,3 @@ if __name__ == "__main__":
 
     while True:
         time.sleep(1)
-        update_prices()

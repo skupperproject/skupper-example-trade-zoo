@@ -60,11 +60,11 @@ window.addEventListener("load", () => {
     function renderOrders() {
         const orders = data.get("Order");
         const users = data.get("User");
-        const headings = ["ID", "User", "Offer", "Quantity", "Limit price"];
+        const headings = ["ID", "User", "Offer", "Quantity", "Limit price", "Actions"];
         const rows = new Array();
 
         for (let order of orders.values()) {
-            if (order.status == "filled") {
+            if (order.status != "open") {
                 continue;
             }
 
@@ -75,7 +75,24 @@ window.addEventListener("load", () => {
                 userName = user.name;
             }
 
-            rows.push([order.id, userName, cap(order.action), order.quantity, order.price]);
+            let link = "-";
+
+            if (order.user_id == userId) {
+                link = gesso.createLink(null, "", {class: "cancel-link"});
+                gesso.createText(link, "Cancel");
+
+                link.addEventListener("click", event => {
+                    event.preventDefault();
+
+                    fetch("/api/cancel-order", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({order: order.id}),
+                    }).then(response => response.json());
+                });
+            }
+
+            rows.push([order.id, userName, cap(order.action), order.quantity, order.price, link]);
         }
 
         if (!rows.length) {
@@ -167,37 +184,3 @@ window.addEventListener("load", () => {
         }).then(response => response.json());
     });
 });
-
-// let link = "-";
-
-// if (order.user_id != userId) {
-//     link = gesso.createLink(null, "", {class: "order-link"});
-//     let action;
-
-//     if (order.action == "buy") {
-//         gesso.createText(link, "Sell");
-//         action = "sell";
-//     } else {
-//         gesso.createText(link, "Buy");
-//         action = "buy";
-//     }
-
-//     link.addEventListener("click", event => {
-//         event.preventDefault();
-
-//         const data = {
-//             "user_id": userId,
-//             "action": action,
-//             "quantity": parseInt(order.quantity),
-//             "price": parseInt(order.price),
-//         };
-
-//         fetch("/api/send-order", {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/json",
-//             },
-//             body: JSON.stringify(data),
-//         }).then(response => response.json());
-//     });
-// }

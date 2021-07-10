@@ -23,6 +23,8 @@ import kafka
 import logging
 import os
 import sys
+import threading
+import time
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
@@ -30,7 +32,6 @@ from starlette.applications import Starlette
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
-from threading import Thread
 
 from animalid import generate_animal_id
 from data import *
@@ -55,13 +56,11 @@ def consume_updates():
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
 
-        if item is None:
-            continue
+        if item:
+            store.put_item(item)
 
-        store.put_item(item)
-
-        for queue in update_queues:
-            asyncio.run(queue.put(item))
+            for queue in update_queues:
+                asyncio.run(queue.put(item))
 
 ## HTTP
 
@@ -100,10 +99,10 @@ async def get_data(request):
     queue = asyncio.Queue()
 
     async def generate():
-        update_queues.add(queue)
-
         for item in store.get_items():
             yield {"data": item.json()}
+
+        update_queues.add(queue)
 
         while True:
             yield {"data": (await queue.get()).json()}
@@ -116,13 +115,25 @@ async def get_data(request):
 @star.route("/api/send-order", methods=["POST"])
 async def send_order(request):
     order = Order(data=await request.json())
+    order.creation_time = time.time()
 
     producer.send("orders", order.json().encode("ascii"))
 
     return JSONResponse({"error": None})
 
+@star.route("/api/cancel-order", methods=["POST"])
+async def cancel_order(request):
+    order_id = (await request.json())["order"]
+    order = store.get_item(Order, order_id)
+
+    order.status = "canceled"
+
+    producer.send("updates", order.json().encode("ascii"))
+
+    return JSONResponse({"error": None})
+
 if __name__ == "__main__":
-    update_thread = Thread(target=consume_updates, daemon=True)
+    update_thread = threading.Thread(target=consume_updates, daemon=True)
     update_thread.start()
 
     uvicorn.run(star, host=http_host, port=http_port, log_level="info")
