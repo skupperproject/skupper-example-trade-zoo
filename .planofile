@@ -13,7 +13,6 @@ def run_(app):
 
     with working_dir("market-maker"):
         maker1 = start("python3 main.py")
-        maker2 = start("python3 main.py")
 
     with working_dir("frontend"):
         frontend1 = start("python3 main.py")
@@ -29,7 +28,6 @@ def run_(app):
         kill(order2)
         kill(data1)
         kill(maker1)
-        kill(maker2)
         kill(frontend1)
         kill(frontend2)
 
@@ -71,3 +69,10 @@ def test(app):
 @command
 def test_external(app, public_kubeconfig, private_kubeconfig):
     run_steps_external("skewer.yaml", public=public_kubeconfig, private=private_kubeconfig)
+
+@command
+def kafka_recreate_topics(app):
+    run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic orders --delete", shell=True)
+    run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --delete", shell=True)
+    run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic orders --create --partitions 3", shell=True)
+    run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --create --partitions 1", shell=True)

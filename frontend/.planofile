@@ -1,4 +1,4 @@
-image_tag = "quay.io/ssorj/trade-zoo-kafka-frontend"
+image_tag = "quay.io/ssorj/trade-zoo-frontend"
 
 @command
 def build_image(app):

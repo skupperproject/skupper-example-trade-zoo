@@ -17,7 +17,6 @@
 # under the License.
 #
 
-import asyncio
 import json
 import kafka
 import logging
@@ -50,19 +49,21 @@ def consume_updates():
         store.put_item(item)
 
 def update_prices():
-    bid_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "buy"]
-    ask_prices = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "sell"]
+    open_bids = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "buy"]
+    open_asks = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "sell"]
+    trades = [x.price for x in store.get_items(Trade)]
 
     curr = MarketData(id="crackers")
 
-    if bid_prices:
-        curr.bid_price = max(bid_prices)
+    if open_bids:
+        curr.bid_price = max(open_bids)
 
-    if ask_prices:
-        curr.ask_price = min(ask_prices)
+    if open_asks:
+        curr.ask_price = min(open_asks)
 
-    if curr.bid_price and curr.ask_price:
-        curr.spread = round((curr.ask_price - curr.bid_price) / curr.ask_price * 100)
+    if trades:
+        curr.high_price = max(trades)
+        curr.low_price = min(trades)
 
     prev = store.get_item(MarketData, "crackers")
 

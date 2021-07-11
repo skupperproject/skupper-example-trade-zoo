@@ -102,6 +102,8 @@ def find_matching_buy_order(sell_order):
         return buy_orders[0]
 
 def execute_trade(buy_order, sell_order):
+    print(f"{process_id}: Executing trade")
+
     trade = Trade()
     trade.buyer_id = buy_order.user_id
     trade.seller_id = sell_order.user_id

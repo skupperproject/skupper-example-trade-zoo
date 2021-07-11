@@ -60,7 +60,7 @@ window.addEventListener("load", () => {
     function renderOrders() {
         const orders = data.get("Order");
         const users = data.get("User");
-        const headings = ["ID", "User", "Offer", "Quantity", "Limit price", "Actions"];
+        const headings = ["ID", "User", "Offer", "Price", "Actions"];
         const rows = new Array();
 
         for (let order of orders.values()) {
@@ -92,7 +92,7 @@ window.addEventListener("load", () => {
                 });
             }
 
-            rows.push([order.id, userName, cap(order.action), order.quantity, order.price, link]);
+            rows.push([order.id, userName, cap(order.action), order.price, link]);
         }
 
         if (!rows.length) {
@@ -111,14 +111,14 @@ window.addEventListener("load", () => {
     function renderTrades() {
         const trades = data.get("Trade");
         const users = data.get("User");
-        const headings = ["ID", "Buyer", "Seller", "Quantity", "Price"];
+        const headings = ["ID", "Buyer", "Seller", "Price"];
         const rows = new Array();
 
         for (let trade of trades.values()) {
             const buyer = users.get(trade.buyer_id);
             const seller = users.get(trade.seller_id);
 
-            rows.push([trade.id, buyer.name, seller.name, trade.quantity, trade.price]);
+            rows.push([trade.id, buyer.name, seller.name, trade.price]);
         }
 
         rows.reverse();
@@ -135,12 +135,8 @@ window.addEventListener("load", () => {
         if (market) {
             $("#bid").textContent = nvl(market.bid_price, "-");
             $("#ask").textContent = nvl(market.ask_price, "-");
-
-            if (market.spread !== null) {
-                $("#spread").textContent = market.spread + "%";
-            } else {
-                $("#spread").textContent = "-";
-            }
+            $("#low").textContent = nvl(market.low_price, "-");
+            $("#high").textContent = nvl(market.high_price, "-");
         }
     }
 
@@ -165,13 +161,13 @@ window.addEventListener("load", () => {
         }
     };
 
-    $("#order-form").addEventListener("submit", event => {
+    function sendOrder(event) {
         event.preventDefault();
 
         const data = {
             "user_id": userId,
             "action": event.submitter.value,
-            "quantity": parseInt(event.target.quantity.value),
+            "quantity": 1,
             "price": parseInt(event.target.price.value),
         }
 
@@ -182,5 +178,8 @@ window.addEventListener("load", () => {
             },
             body: JSON.stringify(data),
         }).then(response => response.json());
-    });
+    }
+
+    $("#buy-form").addEventListener("submit", sendOrder);
+    $("#sell-form").addEventListener("submit", sendOrder);
 });

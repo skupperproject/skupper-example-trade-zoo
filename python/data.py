@@ -108,7 +108,7 @@ class User(DataItem):
     id = None
     name = None
     pennies = 100
-    crackers = 100
+    crackers = 10
 
 class Order(DataItem):
     id = None
@@ -132,7 +132,8 @@ class MarketData(DataItem):
     id = None
     bid_price = None
     ask_price = None
-    spread = None
+    high_price = None
+    low_price = None
 
 def unique_id():
     uuid_bytes = _uuid.uuid4().bytes
