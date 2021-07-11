@@ -28,7 +28,7 @@ import time
 
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 process_id = f"market-maker-{unique_id()}"
 store = DataStore()
@@ -64,20 +64,22 @@ def process_orders(user):
     orders = store.get_items(Order)
 
     buy_orders = [x for x in orders
-                  if x.status == "open"
+                  if x.action == "buy"
                   and x.user_id != user.id
-                  and x.action == "buy"
                   and x.quantity == 1
                   and x.price == market_data.bid_price
-                  and now - x.creation_time > 10]
+                  and now - x.creation_time > 10
+                  and x.execution_time is None
+                  and x.deletion_time is None]
 
     sell_orders = [x for x in orders
-                   if x.status == "open"
+                   if x.action == "sell"
                    and x.user_id != user.id
-                   and x.action == "sell"
                    and x.quantity == 1
                    and x.price == market_data.ask_price
-                   and now - x.creation_time > 10]
+                   and now - x.creation_time > 10
+                   and x.execution_time is None
+                   and x.deletion_time is None]
 
     for buy_order, sell_order in zip(buy_orders, sell_orders):
         sell = Order()

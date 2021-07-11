@@ -27,7 +27,7 @@ import time
 
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
@@ -86,7 +86,8 @@ def find_matching_sell_order(buy_order):
                    if x.action == "sell"
                    and x.quantity == buy_order.quantity
                    and x.price <= buy_order.price
-                   and x.status == "open"]
+                   and x.execution_time is None
+                   and x.deletion_time is None]
 
     if sell_orders:
         return sell_orders[0]
@@ -96,7 +97,8 @@ def find_matching_buy_order(sell_order):
                   if x.action == "buy"
                   and x.quantity == sell_order.quantity
                   and x.price >= sell_order.price
-                  and x.status == "open"]
+                  and x.execution_time is None
+                  and x.deletion_time is None]
 
     if buy_orders:
         return buy_orders[0]
@@ -111,8 +113,8 @@ def execute_trade(buy_order, sell_order):
     trade.price = sell_order.price
     trade.creation_time = time.time()
 
-    buy_order.status = "filled"
-    sell_order.status = "filled"
+    buy_order.execution_time = trade.creation_time
+    sell_order.execution_time = trade.creation_time
 
     buyer = asyncio.run(store.await_item(User, trade.buyer_id))
     buyer.pennies -= trade.quantity * trade.price

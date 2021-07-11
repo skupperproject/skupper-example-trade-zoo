@@ -26,7 +26,7 @@ import time
 
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 process_id = f"market-data-{unique_id()}"
 store = DataStore()
@@ -49,8 +49,18 @@ def consume_updates():
         store.put_item(item)
 
 def update_prices():
-    open_bids = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "buy"]
-    open_asks = [x.price for x in store.get_items(Order) if x.status == "open" and x.action == "sell"]
+    orders = store.get_items(Order)
+
+    open_bids = [x.price for x in orders
+                 if x.action == "buy"
+                 and x.execution_time is None
+                 and x.deletion_time is None]
+
+    open_asks = [x.price for x in orders
+                 if x.action == "sell"
+                 and x.execution_time is None
+                 and x.deletion_time is None]
+
     trades = [x.price for x in store.get_items(Trade)]
 
     curr = MarketData(id="crackers")

@@ -36,7 +36,7 @@ from starlette.staticfiles import StaticFiles
 from animalid import generate_animal_id
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 
 process_id = f"frontend-{unique_id()}"
 store = DataStore()
@@ -100,6 +100,12 @@ async def get_data(request):
 
     async def generate():
         for item in store.get_items():
+            if isinstance(item, Order) and item.execution_time is not None:
+                continue
+
+            if isinstance(item, (Order, Trade)) and item.deletion_time is not None:
+                continue
+
             yield {"data": item.json()}
 
         update_queues.add(queue)
@@ -121,14 +127,25 @@ async def send_order(request):
 
     return JSONResponse({"error": None})
 
-@star.route("/api/cancel-order", methods=["POST"])
-async def cancel_order(request):
+@star.route("/api/delete-order", methods=["POST"])
+async def delete_order(request):
     order_id = (await request.json())["order"]
     order = store.get_item(Order, order_id)
 
-    order.status = "canceled"
+    order.deletion_time = time.time()
 
     producer.send("updates", order.json().encode("ascii"))
+
+    return JSONResponse({"error": None})
+
+@star.route("/api/delete-trade", methods=["POST"])
+async def delete_trade(request):
+    trade_id = (await request.json())["trade"]
+    trade = store.get_item(Trade, trade_id)
+
+    trade.deletion_time = time.time()
+
+    producer.send("updates", trade.json().encode("ascii"))
 
     return JSONResponse({"error": None})
 

@@ -64,7 +64,7 @@ window.addEventListener("load", () => {
         const rows = new Array();
 
         for (let order of orders.values()) {
-            if (order.status != "open") {
+            if (order.execution_time !== null || order.deletion_time !== null) {
                 continue;
             }
 
@@ -78,13 +78,13 @@ window.addEventListener("load", () => {
             let link = "-";
 
             if (order.user_id == userId) {
-                link = gesso.createLink(null, "", {class: "cancel-link"});
+                link = gesso.createLink(null, "", {class: "action-link"});
                 gesso.createText(link, "Cancel");
 
                 link.addEventListener("click", event => {
                     event.preventDefault();
 
-                    fetch("/api/cancel-order", {
+                    fetch("/api/delete-order", {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify({order: order.id}),
@@ -111,14 +111,31 @@ window.addEventListener("load", () => {
     function renderTrades() {
         const trades = data.get("Trade");
         const users = data.get("User");
-        const headings = ["ID", "Buyer", "Seller", "Price"];
+        const headings = ["ID", "Buyer", "Seller", "Price", "Actions"];
         const rows = new Array();
 
         for (let trade of trades.values()) {
+            if (trade.deletion_time !== null) {
+                continue;
+            }
+
             const buyer = users.get(trade.buyer_id);
             const seller = users.get(trade.seller_id);
 
-            rows.push([trade.id, buyer.name, seller.name, trade.price]);
+            const link = gesso.createLink(null, "", {class: "action-link"});
+            gesso.createText(link, "Delete");
+
+            link.addEventListener("click", event => {
+                event.preventDefault();
+
+                fetch("/api/delete-trade", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({trade: trade.id}),
+                }).then(response => response.json());
+            });
+
+            rows.push([trade.id, buyer.name, seller.name, trade.price, link]);
         }
 
         rows.reverse();

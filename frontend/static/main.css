@@ -63,20 +63,15 @@ select {
 }
 
 select, input:not([type="submit"]) {
-    width: 4em;
+    width: 6em;
 }
 
 #orders, #trades {
     overflow-y: scroll;
 }
 
-#orders > table td {
+#orders > table td, #trades > table td {
     width: 20%;
-    overflow-x: hidden;
-}
-
-#trades > table td {
-    width: 25%;
     overflow-x: hidden;
 }
 
