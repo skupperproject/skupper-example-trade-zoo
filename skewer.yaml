@@ -118,5 +118,6 @@ cleaning_up:
     public:
       - run: skupper delete
       - run: kubectl delete -f frontend/kubernetes.yaml
+      - run: kubectl delete -f market-data/kubernetes.yaml
       - run: kubectl delete -f order-processor/kubernetes.yaml
 next_steps: !string next_steps

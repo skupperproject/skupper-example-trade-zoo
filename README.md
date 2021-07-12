@@ -257,6 +257,7 @@ Console for _public_:
 ~~~ shell
 skupper delete
 kubectl delete -f frontend/kubernetes.yaml
+kubectl delete -f market-data/kubernetes.yaml
 kubectl delete -f order-processor/kubernetes.yaml
 ~~~
 
