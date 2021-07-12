@@ -22,7 +22,7 @@ across cloud providers, data centers, and edge sites.
 * [Step 5: Link your namespaces](#step-5-link-your-namespaces)
 * [Step 6: Deploy the Kafka cluster](#step-6-deploy-the-kafka-cluster)
 * [Step 7: Expose the Kafka cluster](#step-7-expose-the-kafka-cluster)
-* [Step 8: XXX](#step-8-xxx)
+* [Step 8: Deploy the application services](#step-8-deploy-the-application-services)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -229,12 +229,13 @@ Console for _public_:
 kubectl get services
 ~~~
 
-## Step 8: XXX
+## Step 8: Deploy the application services
 
 Console for _public_:
 
 ~~~ shell
 kubectl apply -f order-processor/kubernetes.yaml
+kubectl apply -f market-data/kubernetes.yaml
 kubectl apply -f frontend/kubernetes.yaml
 ~~~
 

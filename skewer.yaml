@@ -101,10 +101,11 @@ steps:
       public:
         - run: kubectl get services
           await: [service/cluster1-kafka-brokers]
-  - title: XXX
+  - title: Deploy the application services
     commands:
       public:
         - run: kubectl apply -f order-processor/kubernetes.yaml
+        - run: kubectl apply -f market-data/kubernetes.yaml
         - run: kubectl apply -f frontend/kubernetes.yaml
           sleep: 86400
 cleaning_up:
