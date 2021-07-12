@@ -132,6 +132,9 @@ async def delete_order(request):
     order_id = (await request.json())["order"]
     order = store.get_item(Order, order_id)
 
+    if not order:
+        return JSONResponse({"error": "not-found"}, 404)
+
     order.deletion_time = time.time()
 
     producer.send("updates", order.json().encode("ascii"))
@@ -142,6 +145,9 @@ async def delete_order(request):
 async def delete_trade(request):
     trade_id = (await request.json())["trade"]
     trade = store.get_item(Trade, trade_id)
+
+    if not trade:
+        return JSONResponse({"error": "not-found"}, 404)
 
     trade.deletion_time = time.time()
 

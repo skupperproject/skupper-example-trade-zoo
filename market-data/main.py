@@ -43,10 +43,8 @@ def consume_updates():
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
 
-        if item is None:
-            continue
-
-        store.put_item(item)
+        if item:
+            store.put_item(item)
 
 def update_prices():
     orders = store.get_items(Order)
@@ -61,7 +59,8 @@ def update_prices():
                  and x.execution_time is None
                  and x.deletion_time is None]
 
-    trades = [x.price for x in store.get_items(Trade)]
+    trades = [x.price for x in store.get_items(Trade)
+              if x.deletion_time is None]
 
     curr = MarketData(id="crackers")
 
@@ -77,9 +76,10 @@ def update_prices():
 
     prev = store.get_item(MarketData, "crackers")
 
-    if not prev or (prev and (curr.bid_price != prev.bid_price or curr.ask_price != prev.ask_price)):
+    if not prev or (prev and (curr.bid_price != prev.bid_price
+                              or curr.ask_price != prev.ask_price
+                              or curr.high_price != prev.high_price)):
         producer.send("updates", curr.json().encode("ascii"))
-
         print(f"{process_id}: Updated market prices")
 
 if __name__ == "__main__":
