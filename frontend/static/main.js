@@ -178,7 +178,7 @@ window.addEventListener("load", () => {
         }
     };
 
-    function sendOrder(event) {
+    function submitOrder(event) {
         event.preventDefault();
 
         const data = {
@@ -188,7 +188,7 @@ window.addEventListener("load", () => {
             "price": parseInt(event.target.price.value),
         }
 
-        fetch("/api/send-order", {
+        fetch("/api/submit-order", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -197,6 +197,6 @@ window.addEventListener("load", () => {
         }).then(response => response.json());
     }
 
-    $("#buy-form").addEventListener("submit", sendOrder);
-    $("#sell-form").addEventListener("submit", sendOrder);
+    $("#buy-form").addEventListener("submit", submitOrder);
+    $("#sell-form").addEventListener("submit", submitOrder);
 });

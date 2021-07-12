@@ -118,8 +118,8 @@ async def get_data(request):
 
     return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
 
-@star.route("/api/send-order", methods=["POST"])
-async def send_order(request):
+@star.route("/api/submit-order", methods=["POST"])
+async def submit_order(request):
     order = Order(data=await request.json())
     order.creation_time = time.time()
 

@@ -78,7 +78,8 @@ def update_prices():
 
     if not prev or (prev and (curr.bid_price != prev.bid_price
                               or curr.ask_price != prev.ask_price
-                              or curr.high_price != prev.high_price)):
+                              or curr.high_price != prev.high_price
+                              or curr.low_price != prev.low_price)):
         producer.send("updates", curr.json().encode("ascii"))
         print(f"{process_id}: Updated market prices")
 
