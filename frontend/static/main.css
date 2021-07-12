@@ -30,16 +30,12 @@
     width: 1.6em;
 }
 
-.order-form {
+#order-form {
     display: flex;
 }
 
-.order-form > div:not(:last-child) {
-    margin-right: 1em;
-}
-
-.order-form > div > h4 {
-    margin: 0;
+#order-form > div:not(:last-child) {
+    margin-right: 2em;
 }
 
 #market-prices {
@@ -64,6 +60,7 @@ select {
 
 select, input:not([type="submit"]) {
     width: 6em;
+    margin: 0;
 }
 
 #orders, #trades {
@@ -116,4 +113,21 @@ html, body, section, section > div {
     padding-top: 2em;
     overflow: auto;
     height: 50%;
+}
+
+button {
+    margin-right: 1em;
+}
+
+button:hover {
+    border: 1px solid black;
+}
+
+.hflex {
+    display: flex;
+}
+
+.hflex > * {
+    margin-top: 0;
+    margin-bottom: 0;
 }

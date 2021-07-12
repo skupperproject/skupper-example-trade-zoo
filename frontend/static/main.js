@@ -178,7 +178,7 @@ window.addEventListener("load", () => {
         }
     };
 
-    function submitOrder(event) {
+    $("#order-form").addEventListener("submit", event => {
         event.preventDefault();
 
         const data = {
@@ -195,8 +195,5 @@ window.addEventListener("load", () => {
             },
             body: JSON.stringify(data),
         }).then(response => response.json());
-    }
-
-    $("#buy-form").addEventListener("submit", submitOrder);
-    $("#sell-form").addEventListener("submit", submitOrder);
+    });
 });
