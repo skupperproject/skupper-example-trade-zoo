@@ -36,7 +36,7 @@ from starlette.staticfiles import StaticFiles
 from animalid import generate_animal_id
 from data import *
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 process_id = f"frontend-{unique_id()}"
 store = DataStore()
@@ -45,13 +45,30 @@ update_queues = set()
 ## Kafka
 
 bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
+
+producer = None
+
+while producer is None:
+    try:
+        producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers,
+                                       api_version_auto_timeout_ms=5000)
+    except:
+        print(f"{process_id}: Failed creating a Kafka consumer")
+        time.sleep(5)
 
 def consume_updates():
-    consumer = kafka.KafkaConsumer("updates",
-                                   group_id=process_id,
-                                   auto_offset_reset="earliest",
-                                   bootstrap_servers=bootstrap_servers)
+    consumer = None
+
+    while consumer is None:
+        try:
+            consumer = kafka.KafkaConsumer("updates",
+                                           group_id=process_id,
+                                           auto_offset_reset="earliest",
+                                           bootstrap_servers=bootstrap_servers,
+                                           api_version_auto_timeout_ms=5000)
+        except:
+            print(f"{process_id}: Failed creating a Kafka consumer")
+            time.sleep(5)
 
     for message in consumer:
         item = DataItem.object(json.loads(message.value))
