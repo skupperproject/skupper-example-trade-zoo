@@ -28,11 +28,10 @@ import traceback
 
 from data import *
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
-process_id = f"order-processor-{unique_id()}"
 store = DataStore()
-
+process_id = f"order-processor-{unique_id()}"
 producer = create_producer(process_id)
 
 def consume_updates():

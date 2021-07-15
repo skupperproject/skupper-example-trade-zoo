@@ -24,29 +24,29 @@ import logging
 import os
 import sys
 import threading
+import traceback
 import time
 
 from data import *
 
-# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 process_id = f"market-maker-{unique_id()}"
 store = DataStore()
 
-bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
+producer = create_producer(process_id)
 
 def consume_updates():
-    consumer = kafka.KafkaConsumer("updates",
-                                   group_id=process_id,
-                                   auto_offset_reset="earliest",
-                                   bootstrap_servers=bootstrap_servers)
+    consumer = create_update_consumer(process_id)
 
     for message in consumer:
-        item = DataItem.object(json.loads(message.value))
+        try:
+            item = DataItem.object(json.loads(message.value))
+        except:
+            traceback.print_exc()
+            continue
 
-        if item:
-            store.put_item(item)
+        store.put_item(item)
 
 def process_orders(user):
     market_data = store.get_item(MarketData, "crackers")

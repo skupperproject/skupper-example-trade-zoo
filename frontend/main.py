@@ -37,10 +37,10 @@ from starlette.staticfiles import StaticFiles
 from animalid import generate_animal_id
 from data import *
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-process_id = f"frontend-{unique_id()}"
 store = DataStore()
+process_id = f"frontend-{unique_id()}"
 update_queues = set()
 
 ## Kafka

@@ -29,9 +29,8 @@ from data import *
 
 logging.basicConfig(level=logging.INFO)
 
-process_id = f"market-data-{unique_id()}"
 store = DataStore()
-
+process_id = f"market-data-{unique_id()}"
 producer = create_producer(process_id)
 
 def consume_updates():
