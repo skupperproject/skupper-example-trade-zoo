@@ -25,6 +25,7 @@ import os
 import sys
 import threading
 import time
+import traceback
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
@@ -44,40 +45,22 @@ update_queues = set()
 
 ## Kafka
 
-bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-
-producer = None
-
-while producer is None:
-    try:
-        producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers,
-                                       api_version_auto_timeout_ms=5000)
-    except:
-        print(f"{process_id}: Failed creating a Kafka consumer")
-        time.sleep(5)
+producer = create_producer(process_id)
 
 def consume_updates():
-    consumer = None
-
-    while consumer is None:
-        try:
-            consumer = kafka.KafkaConsumer("updates",
-                                           group_id=process_id,
-                                           auto_offset_reset="earliest",
-                                           bootstrap_servers=bootstrap_servers,
-                                           api_version_auto_timeout_ms=5000)
-        except:
-            print(f"{process_id}: Failed creating a Kafka consumer")
-            time.sleep(5)
+    consumer = create_update_consumer(process_id)
 
     for message in consumer:
-        item = DataItem.object(json.loads(message.value))
+        try:
+            item = DataItem.object(json.loads(message.value))
+        except:
+            traceback.print_exc()
+            continue
 
-        if item:
-            store.put_item(item)
+        store.put_item(item)
 
-            for queue in update_queues:
-                asyncio.run(queue.put(item))
+        for queue in update_queues:
+            asyncio.run(queue.put(item))
 
 ## HTTP
 

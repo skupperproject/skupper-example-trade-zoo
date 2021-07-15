@@ -24,6 +24,7 @@ import logging
 import os
 import threading
 import time
+import traceback
 
 from data import *
 
@@ -32,28 +33,30 @@ from data import *
 process_id = f"order-processor-{unique_id()}"
 store = DataStore()
 
-bootstrap_servers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers)
+producer = create_producer(process_id)
 
 def consume_updates():
-    consumer = kafka.KafkaConsumer("updates",
-                                   group_id=process_id,
-                                   auto_offset_reset="earliest",
-                                   bootstrap_servers=bootstrap_servers)
+    consumer = create_update_consumer(process_id)
 
     for message in consumer:
-        item = DataItem.object(json.loads(message.value))
+        try:
+            item = DataItem.object(json.loads(message.value))
+        except:
+            traceback.print_exc()
+            continue
 
-        if item:
-            store.put_item(item)
+        store.put_item(item)
 
 def consume_orders():
-    consumer = kafka.KafkaConsumer("orders",
-                                   group_id="order-processors",
-                                   bootstrap_servers=bootstrap_servers)
+    consumer = create_order_consumer("order-processors")
 
     for message in consumer:
-        order = Order(data=json.loads(message.value))
+        try:
+            order = Order(data=json.loads(message.value))
+        except:
+            traceback.print_exc()
+            continue
+
         process_order(order)
 
 def process_order(order):
