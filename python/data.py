@@ -73,19 +73,13 @@ class DataStore:
         self.data = _collections.defaultdict(dict)
         self.lock = _threading.Lock()
 
-    def put_item(self, item):
+    def put(self, item):
         with self.lock:
             self.data[item.__class__][item.id] = item
 
-    def get_item(self, cls, id):
+    def get(self, cls=None, id=None):
         with self.lock:
-            return self.data[cls].get(id)
-
-    def get_items(self, cls=None):
-        with self.lock:
-            if cls is not None:
-                return list(self.data[cls].values())
-            else:
+            if cls is None:
                 items = list()
 
                 for cls in self.data:
@@ -93,14 +87,22 @@ class DataStore:
 
                 return items
 
-    async def await_item(self, cls, id, timeout=None):
-        item = self.get_item(cls, id)
+            if id is None:
+                return list(self.data[cls].values())
+
+            return self.data[cls].get(id)
+
+    def wait(self, cls, id, timeout=None):
+        return _asyncio.run(self.wait_async(cls, id, timeout))
+
+    async def wait_async(self, cls, id, timeout=None):
+        item = self.get(cls, id)
         start = _time.time()
 
         while item is None:
             await _asyncio.sleep(0.2)
 
-            item = self.get_item(cls, id)
+            item = self.get(cls, id)
 
             if timeout and _time.time() - start > timeout:
                 break
@@ -146,32 +148,23 @@ def unique_id():
 
     return _binascii.hexlify(uuid_bytes).decode("utf-8")
 
-def create_producer(process_id):
-    bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-
-    config = {
-        "bootstrap.servers": bootstrap_servers,
-        "connections.max.idle.ms": 10_000,
-        "socket.timeout.ms": 10_000,
-        "metadata.max.age.ms": 10_000,
-        "api.version.request": False,
+def _common_config():
+    return {
+        "bootstrap.servers": _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
+        # "connections.max.idle.ms": 10_000,
+        # "socket.timeout.ms": 10_000,
+        # "metadata.max.age.ms": 10_000,
+        # "api.version.request": False,
     }
 
-    return _kafka.Producer(config)
+def create_producer():
+    return _kafka.Producer(_common_config())
 
 def create_update_consumer(group_id):
-    bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-
-    config = {
-        "bootstrap.servers": bootstrap_servers,
-        "group.id": group_id,
-        "auto.offset.reset": "earliest",
-        "enable.auto.commit": False,
-        "connections.max.idle.ms": 10_000,
-        "socket.timeout.ms": 10_000,
-        "metadata.max.age.ms": 10_000,
-        "api.version.request": False,
-    }
+    config = _common_config()
+    config["group.id"] = group_id
+    config["auto.offset.reset"] = "earliest"
+    config["enable.auto.commit"] = False
 
     consumer = _kafka.Consumer(config)
     consumer.subscribe(["updates"])
@@ -179,14 +172,31 @@ def create_update_consumer(group_id):
     return consumer
 
 def create_order_consumer(group_id):
-    bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-
-    config = {
-        "bootstrap.servers": bootstrap_servers,
-        "group.id": group_id,
-    }
+    config = _common_config()
+    config["group.id"] = group_id
 
     consumer = _kafka.Consumer(config)
     consumer.subscribe(["orders"])
 
     return consumer
+
+def consume_items(consumer):
+    while True:
+        message = consumer.poll(1)
+
+        if message is None:
+            continue
+
+        if message.error():
+            print(f"{process_id} Consumer error: {message.error()}")
+            continue
+
+        try:
+            yield DataItem.object(message.value())
+        except:
+            _traceback.print_exc()
+
+_producer = _kafka.Producer(_common_config())
+
+def produce_item(topic, item):
+    _producer.produce(topic, item.bytes())

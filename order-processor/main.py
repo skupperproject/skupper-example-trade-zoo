@@ -17,77 +17,40 @@
 # under the License.
 #
 
-import asyncio
-import json
-import logging
-import os
 import threading
 import time
-import traceback
 
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+process_id = f"order-processor-{unique_id()}"
 
 store = DataStore()
-process_id = f"order-processor-{unique_id()}"
+
+def log(message):
+    print(f"{process_id}: {message}")
 
 def process_updates():
     consumer = create_update_consumer(process_id)
 
     try:
-        while True:
-            message = consumer.poll(1)
-
-            if message is None:
-                continue
-
-            if message.error():
-                print(f"{process_id} Consumer error: {message.error()}")
-                continue
-
-            try:
-                item = DataItem.object(message.value())
-            except:
-                traceback.print_exc()
-                continue
-
-            store.put_item(item)
+        for item in consume_items(consumer):
+            store.put(item)
     finally:
         consumer.close()
 
 def process_orders():
     consumer = create_order_consumer("order-processors")
-    producer = create_producer(process_id)
 
     try:
-        while True:
-            message = consumer.poll(1)
-
-            if message is None:
-                continue
-
-            if message.error():
-                print(f"{process_id} Consumer error: {message.error()}")
-                continue
-
-            try:
-                order = Order(data=json.loads(message.value()))
-            except:
-                traceback.print_exc()
-                continue
-
-            process_order(producer, order)
+        for order in consume_items(consumer):
+            process_order(order)
     finally:
         consumer.close()
-        producer.flush()
 
-def process_order(producer, order):
-    print(f"{process_id}: Processing {order}")
+def process_order(order):
+    log(f"Processing {order}")
 
-    producer.produce("updates", order.bytes())
-
-    time.sleep(1)
+    produce_item("updates", order)
 
     buy_order = None
     sell_order = None
@@ -101,14 +64,14 @@ def process_order(producer, order):
         sell_order = order
 
     if buy_order and sell_order:
-        execute_trade(producer, buy_order, sell_order)
+        execute_trade(buy_order, sell_order)
     else:
         print(f"{process_id}: No match for {order}")
 
-    print(f"{process_id}: Processed {order}")
+    log(f"Processed {order}")
 
 def find_matching_sell_order(buy_order):
-    sell_orders = [x for x in store.get_items(Order)
+    sell_orders = [x for x in store.get(Order)
                    if x.action == "sell"
                    and x.quantity == buy_order.quantity
                    and x.price <= buy_order.price
@@ -119,7 +82,7 @@ def find_matching_sell_order(buy_order):
         return sell_orders[0]
 
 def find_matching_buy_order(sell_order):
-    buy_orders = [x for x in store.get_items(Order)
+    buy_orders = [x for x in store.get(Order)
                   if x.action == "buy"
                   and x.quantity == sell_order.quantity
                   and x.price >= sell_order.price
@@ -129,8 +92,8 @@ def find_matching_buy_order(sell_order):
     if buy_orders:
         return buy_orders[0]
 
-def execute_trade(producer, buy_order, sell_order):
-    print(f"{process_id}: Executing trade")
+def execute_trade(buy_order, sell_order):
+    log("Executing trade")
 
     trade = Trade()
     trade.buyer_id = buy_order.user_id
@@ -142,21 +105,21 @@ def execute_trade(producer, buy_order, sell_order):
     buy_order.execution_time = trade.creation_time
     sell_order.execution_time = trade.creation_time
 
-    buyer = asyncio.run(store.await_item(User, trade.buyer_id))
+    buyer = store.wait(User, trade.buyer_id)
     buyer.pennies -= trade.quantity * trade.price
     buyer.crackers += trade.quantity
 
-    seller = asyncio.run(store.await_item(User, trade.seller_id))
+    seller = store.wait(User, trade.seller_id)
     seller.pennies += trade.quantity * trade.price
     seller.crackers -= trade.quantity
 
-    producer.produce("updates", trade.bytes())
-    producer.produce("updates", buy_order.bytes())
-    producer.produce("updates", sell_order.bytes())
-    producer.produce("updates", buyer.bytes())
-    producer.produce("updates", seller.bytes())
+    produce_item("updates", trade)
+    produce_item("updates", buy_order)
+    produce_item("updates", sell_order)
+    produce_item("updates", buyer)
+    produce_item("updates", seller)
 
-    print(f"{process_id}: Executed {trade}")
+    log(f"Executed {trade}")
 
 if __name__ == "__main__":
     update_thread = threading.Thread(target=process_updates, daemon=True)

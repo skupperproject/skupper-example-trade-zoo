@@ -18,12 +18,9 @@
 #
 
 import asyncio
-import logging
 import os
-import sys
 import threading
 import time
-import traceback
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
@@ -35,37 +32,22 @@ from starlette.staticfiles import StaticFiles
 from animalid import generate_animal_id
 from data import *
 
-logging.basicConfig(level=logging.INFO)
+process_id = f"frontend-{unique_id()}"
 
 store = DataStore()
-process_id = f"frontend-{unique_id()}"
 update_queues = set()
 
-## Kafka
+def log(message):
+    print(f"{process_id}: {message}")
 
-producer = create_producer(process_id)
+## Kafka
 
 def process_updates():
     consumer = create_update_consumer(process_id)
 
     try:
-        while True:
-            message = consumer.poll(1)
-
-            if message is None:
-                continue
-
-            if message.error():
-                print(f"{process_id} Consumer error: {message.error()}")
-                continue
-
-            try:
-                item = DataItem.object(message.value())
-            except:
-                traceback.print_exc()
-                continue
-
-            store.put_item(item)
+        for item in consume_items(consumer):
+            store.put(item)
 
             for queue in update_queues:
                 asyncio.run(queue.put(item))
@@ -88,7 +70,7 @@ async def get_index(request):
         user = await create_user()
         return RedirectResponse(url=f"?user={user.id}")
 
-    user = await store.await_item(User, user_id, timeout=1)
+    user = await store.wait_async(User, user_id, timeout=1)
 
     if user is None:
         user = await create_user()
@@ -97,19 +79,25 @@ async def get_index(request):
     return FileResponse("static/index.html")
 
 async def create_user():
+    log("Creating user")
+
     user = User()
     user.name = generate_animal_id()
 
-    producer.produce("updates", user.bytes())
+    produce_item("updates", user)
 
-    return await store.await_item(User, user.id)
+    user = await store.wait_async(User, user.id)
+
+    log(f"Created {user}")
+
+    return user
 
 @star.route("/api/data")
 async def get_data(request):
     queue = asyncio.Queue()
 
     async def generate():
-        for item in store.get_items():
+        for item in store.get():
             if isinstance(item, Order) and item.execution_time is not None:
                 continue
 
@@ -130,38 +118,42 @@ async def get_data(request):
 
 @star.route("/api/submit-order", methods=["POST"])
 async def submit_order(request):
+    log("Submitting order")
+
     order = Order(data=await request.json())
     order.creation_time = time.time()
 
-    producer.produce("orders", order.bytes())
+    produce_item("orders", order)
+
+    log(f"Submitted {order}")
 
     return JSONResponse({"error": None})
 
 @star.route("/api/delete-order", methods=["POST"])
 async def delete_order(request):
     order_id = (await request.json())["order"]
-    order = store.get_item(Order, order_id)
+    order = store.get(Order, order_id)
 
     if not order:
         return JSONResponse({"error": "not-found"}, 404)
 
     order.deletion_time = time.time()
 
-    producer.produce("updates", order.bytes())
+    produce_item("updates", order)
 
     return JSONResponse({"error": None})
 
 @star.route("/api/delete-trade", methods=["POST"])
 async def delete_trade(request):
     trade_id = (await request.json())["trade"]
-    trade = store.get_item(Trade, trade_id)
+    trade = store.get(Trade, trade_id)
 
     if not trade:
         return JSONResponse({"error": "not-found"}, 404)
 
     trade.deletion_time = time.time()
 
-    producer.produce("updates", trade.bytes())
+    produce_item("updates", trade)
 
     return JSONResponse({"error": None})
 
@@ -169,7 +161,4 @@ if __name__ == "__main__":
     update_thread = threading.Thread(target=process_updates, daemon=True)
     update_thread.start()
 
-    try:
-        uvicorn.run(star, host=http_host, port=http_port, log_level="info")
-    finally:
-        producer.flush()
+    uvicorn.run(star, host=http_host, port=http_port, log_level="info")
