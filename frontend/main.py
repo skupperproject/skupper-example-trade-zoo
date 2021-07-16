@@ -19,7 +19,6 @@
 
 import asyncio
 import json
-import kafka
 import logging
 import os
 import sys
@@ -50,17 +49,29 @@ producer = create_producer(process_id)
 def consume_updates():
     consumer = create_update_consumer(process_id)
 
-    for message in consumer:
-        try:
-            item = DataItem.object(json.loads(message.value))
-        except:
-            traceback.print_exc()
-            continue
+    try:
+        while True:
+            message = consumer.poll(1)
 
-        store.put_item(item)
+            if message is None:
+                continue
 
-        for queue in update_queues:
-            asyncio.run(queue.put(item))
+            if message.error():
+                print(f"{process_id} Consumer error: {message.error()}")
+                continue
+
+            try:
+                item = DataItem.object(json.loads(message.value()))
+            except:
+                traceback.print_exc()
+                continue
+
+            store.put_item(item)
+
+            for queue in update_queues:
+                asyncio.run(queue.put(item))
+    finally:
+        consumer.close()
 
 ## HTTP
 
@@ -90,7 +101,7 @@ async def create_user():
     user = User()
     user.name = generate_animal_id()
 
-    producer.send("updates", user.json().encode("ascii"))
+    producer.produce("updates", user.json().encode("ascii"))
 
     return await store.await_item(User, user.id)
 
@@ -123,7 +134,7 @@ async def submit_order(request):
     order = Order(data=await request.json())
     order.creation_time = time.time()
 
-    producer.send("orders", order.json().encode("ascii"))
+    producer.produce("orders", order.json().encode("ascii"))
 
     return JSONResponse({"error": None})
 
@@ -137,7 +148,7 @@ async def delete_order(request):
 
     order.deletion_time = time.time()
 
-    producer.send("updates", order.json().encode("ascii"))
+    producer.produce("updates", order.json().encode("ascii"))
 
     return JSONResponse({"error": None})
 
@@ -151,12 +162,15 @@ async def delete_trade(request):
 
     trade.deletion_time = time.time()
 
-    producer.send("updates", trade.json().encode("ascii"))
+    producer.produce("updates", trade.json().encode("ascii"))
 
     return JSONResponse({"error": None})
 
 if __name__ == "__main__":
-    update_thread = threading.Thread(target=consume_updates, daemon=True)
-    update_thread.start()
+    update_consumer = threading.Thread(target=consume_updates, daemon=True)
+    update_consumer.start()
 
-    uvicorn.run(star, host=http_host, port=http_port, log_level="info")
+    try:
+        uvicorn.run(star, host=http_host, port=http_port, log_level="info")
+    finally:
+        producer.flush()

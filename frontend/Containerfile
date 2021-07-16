@@ -2,7 +2,7 @@ FROM registry.fedoraproject.org/fedora-minimal:34
 
 RUN microdnf -y install python3 && microdnf clean all
 
-RUN pip3 install starlette sse_starlette kafka-python multipart uvicorn
+RUN pip3 install starlette sse_starlette confluent_kafka uvicorn
 
 ADD main.py /app/main.py
 ADD animalid.py /app/animalid.py

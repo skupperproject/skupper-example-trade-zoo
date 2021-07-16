@@ -20,9 +20,9 @@
 import asyncio as _asyncio
 import binascii as _binascii
 import collections as _collections
+import confluent_kafka as _kafka
 import inspect as _inspect
 import json as _json
-import kafka as _kafka
 import logging as _logging
 import os as _os
 import threading as _threading
@@ -144,53 +144,33 @@ def unique_id():
 
 def create_producer(process_id):
     bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    producer = None
+    config = {"bootstrap.servers": bootstrap_servers}
 
-    while producer is None:
-        try:
-            producer = _kafka.KafkaProducer(bootstrap_servers=bootstrap_servers,
-                                            api_version=(2, 5, 0),
-                                            metadata_max_age_ms=10000)
-        except:
-            _traceback.print_exc()
-            _time.sleep(5)
-
-    return producer
+    return _kafka.Producer(config)
 
 def create_update_consumer(group_id):
     bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    consumer = None
 
-    while consumer is None:
-        try:
-            consumer = _kafka.KafkaConsumer("updates",
-                                            group_id=group_id,
-                                            auto_offset_reset="earliest",
-                                            enable_auto_commit=False,
-                                            bootstrap_servers=bootstrap_servers,
-                                            api_version=(2, 5, 0),
-                                            metadata_max_age_ms=10000,
-                                            max_poll_interval_ms=10000)
-        except:
-            _traceback.print_exc()
-            _time.sleep(5)
+    config = {
+        "bootstrap.servers": bootstrap_servers,
+        "group.id": group_id,
+        "auto.offset.reset": "earliest",
+    }
+
+    consumer = _kafka.Consumer(config)
+    consumer.subscribe(["updates"])
 
     return consumer
 
 def create_order_consumer(group_id):
     bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    consumer = None
 
-    while consumer is None:
-        try:
-            consumer = _kafka.KafkaConsumer("orders",
-                                            group_id=group_id,
-                                            bootstrap_servers=bootstrap_servers,
-                                            api_version=(2, 5, 0),
-                                            metadata_max_age_ms=10000,
-                                            max_poll_interval_ms=10000)
-        except:
-            _traceback.print_exc()
-            _time.sleep(5)
+    config = {
+        "bootstrap.servers": bootstrap_servers,
+        "group.id": group_id,
+    }
+
+    consumer = _kafka.Consumer(config)
+    consumer.subscribe(["orders"])
 
     return consumer

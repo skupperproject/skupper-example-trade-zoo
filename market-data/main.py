@@ -18,7 +18,6 @@
 #
 
 import json
-import kafka
 import logging
 import os
 import threading
@@ -31,21 +30,42 @@ logging.basicConfig(level=logging.INFO)
 
 store = DataStore()
 process_id = f"market-data-{unique_id()}"
-producer = create_producer(process_id)
 
 def consume_updates():
     consumer = create_update_consumer(process_id)
 
-    for message in consumer:
-        try:
-            item = DataItem.object(json.loads(message.value))
-        except:
-            traceback.print_exc()
-            continue
+    try:
+        while True:
+            message = consumer.poll(1)
 
-        store.put_item(item)
+            if message is None:
+                continue
 
-def update_prices():
+            if message.error():
+                print(f"{process_id} Consumer error: {message.error()}")
+                continue
+
+            try:
+                item = DataItem.object(json.loads(message.value()))
+            except:
+                traceback.print_exc()
+                continue
+
+            store.put_item(item)
+    finally:
+        consumer.close()
+
+def produce_updates():
+    producer = create_producer(process_id)
+
+    try:
+        while True:
+            time.sleep(1)
+            update_prices(producer)
+    finally:
+        producer.flush()
+
+def update_prices(producer):
     orders = store.get_items(Order)
 
     open_bids = [x.price for x in orders
@@ -79,13 +99,13 @@ def update_prices():
                               or curr.ask_price != prev.ask_price
                               or curr.high_price != prev.high_price
                               or curr.low_price != prev.low_price)):
-        producer.send("updates", curr.json().encode("ascii"))
+        producer.produce("updates", curr.json().encode("ascii"))
+
         print(f"{process_id}: Updated market prices")
 
 if __name__ == "__main__":
-    update_thread = threading.Thread(target=consume_updates, daemon=True)
-    update_thread.start()
+    update_consumer = threading.Thread(target=consume_updates, daemon=True)
+    update_producer = threading.Thread(target=produce_updates, daemon=True)
 
-    while True:
-        time.sleep(1)
-        update_prices()
+    update_consumer.start()
+    update_producer.run()

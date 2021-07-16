@@ -19,7 +19,6 @@
 
 import asyncio
 import json
-import kafka
 import logging
 import os
 import threading
@@ -32,36 +31,61 @@ logging.basicConfig(level=logging.INFO)
 
 store = DataStore()
 process_id = f"order-processor-{unique_id()}"
-producer = create_producer(process_id)
 
 def consume_updates():
     consumer = create_update_consumer(process_id)
 
-    for message in consumer:
-        try:
-            item = DataItem.object(json.loads(message.value))
-        except:
-            traceback.print_exc()
-            continue
+    try:
+        while True:
+            message = consumer.poll(1)
 
-        store.put_item(item)
+            if message is None:
+                continue
 
-def consume_orders():
+            if message.error():
+                print(f"{process_id} Consumer error: {message.error()}")
+                continue
+
+            try:
+                item = DataItem.object(json.loads(message.value()))
+            except:
+                traceback.print_exc()
+                continue
+
+            store.put_item(item)
+    finally:
+        consumer.close()
+
+def process_orders():
     consumer = create_order_consumer("order-processors")
+    producer = create_producer(process_id)
 
-    for message in consumer:
-        try:
-            order = Order(data=json.loads(message.value))
-        except:
-            traceback.print_exc()
-            continue
+    try:
+        while True:
+            message = consumer.poll(1)
 
-        process_order(order)
+            if message is None:
+                continue
 
-def process_order(order):
+            if message.error():
+                print(f"{process_id} Consumer error: {message.error()}")
+                continue
+
+            try:
+                order = Order(data=json.loads(message.value()))
+            except:
+                traceback.print_exc()
+                continue
+
+            process_order(producer, order)
+    finally:
+        consumer.close()
+        producer.flush()
+
+def process_order(producer, order):
     print(f"{process_id}: Processing {order}")
 
-    producer.send("updates", order.json().encode("ascii"))
+    producer.produce("updates", order.json().encode("ascii"))
 
     time.sleep(1)
 
@@ -77,7 +101,7 @@ def process_order(order):
         sell_order = order
 
     if buy_order and sell_order:
-        execute_trade(buy_order, sell_order)
+        execute_trade(producer, buy_order, sell_order)
     else:
         print(f"{process_id}: No match for {order}")
 
@@ -105,7 +129,7 @@ def find_matching_buy_order(sell_order):
     if buy_orders:
         return buy_orders[0]
 
-def execute_trade(buy_order, sell_order):
+def execute_trade(producer, buy_order, sell_order):
     print(f"{process_id}: Executing trade")
 
     trade = Trade()
@@ -126,17 +150,17 @@ def execute_trade(buy_order, sell_order):
     seller.pennies += trade.quantity * trade.price
     seller.crackers -= trade.quantity
 
-    producer.send("updates", trade.json().encode("ascii"))
-    producer.send("updates", buy_order.json().encode("ascii"))
-    producer.send("updates", sell_order.json().encode("ascii"))
-    producer.send("updates", buyer.json().encode("ascii"))
-    producer.send("updates", seller.json().encode("ascii"))
+    producer.produce("updates", trade.json().encode("ascii"))
+    producer.produce("updates", buy_order.json().encode("ascii"))
+    producer.produce("updates", sell_order.json().encode("ascii"))
+    producer.produce("updates", buyer.json().encode("ascii"))
+    producer.produce("updates", seller.json().encode("ascii"))
 
     print(f"{process_id}: Executed {trade}")
 
 if __name__ == "__main__":
-    update_thread = threading.Thread(target=consume_updates, daemon=True)
-    order_thread = threading.Thread(target=consume_orders, daemon=True)
+    update_consumer = threading.Thread(target=consume_updates, daemon=True)
+    order_processor = threading.Thread(target=process_orders, daemon=True)
 
-    update_thread.start()
-    order_thread.run()
+    update_consumer.start()
+    order_processor.run()
