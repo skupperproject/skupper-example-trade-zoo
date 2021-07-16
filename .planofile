@@ -11,9 +11,6 @@ def run_(app):
     with working_dir("market-data"):
         data1 = start("python3 main.py")
 
-    # with working_dir("market-maker"):
-    #     maker1 = start("python3 main.py")
-
     with working_dir("frontend"):
         frontend1 = start("python3 main.py")
 
@@ -33,7 +30,7 @@ def run_(app):
 
 @command
 def build(app):
-    for dir in ("frontend", "order-processor", "market-data", "market-maker"):
+    for dir in ("frontend", "order-processor", "market-data"):
         copy("python/data.py", join(dir, "data.py"))
 
 @command
