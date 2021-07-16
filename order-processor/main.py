@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.INFO)
 store = DataStore()
 process_id = f"order-processor-{unique_id()}"
 
-def consume_updates():
+def process_updates():
     consumer = create_update_consumer(process_id)
 
     try:
@@ -47,7 +47,7 @@ def consume_updates():
                 continue
 
             try:
-                item = DataItem.object(json.loads(message.value()))
+                item = DataItem.object(message.value())
             except:
                 traceback.print_exc()
                 continue
@@ -85,7 +85,7 @@ def process_orders():
 def process_order(producer, order):
     print(f"{process_id}: Processing {order}")
 
-    producer.produce("updates", order.json().encode("ascii"))
+    producer.produce("updates", order.bytes())
 
     time.sleep(1)
 
@@ -150,17 +150,17 @@ def execute_trade(producer, buy_order, sell_order):
     seller.pennies += trade.quantity * trade.price
     seller.crackers -= trade.quantity
 
-    producer.produce("updates", trade.json().encode("ascii"))
-    producer.produce("updates", buy_order.json().encode("ascii"))
-    producer.produce("updates", sell_order.json().encode("ascii"))
-    producer.produce("updates", buyer.json().encode("ascii"))
-    producer.produce("updates", seller.json().encode("ascii"))
+    producer.produce("updates", trade.bytes())
+    producer.produce("updates", buy_order.bytes())
+    producer.produce("updates", sell_order.bytes())
+    producer.produce("updates", buyer.bytes())
+    producer.produce("updates", seller.bytes())
 
     print(f"{process_id}: Executed {trade}")
 
 if __name__ == "__main__":
-    update_consumer = threading.Thread(target=consume_updates, daemon=True)
-    order_processor = threading.Thread(target=process_orders, daemon=True)
+    update_thread = threading.Thread(target=process_updates, daemon=True)
+    order_thread = threading.Thread(target=process_orders, daemon=True)
 
-    update_consumer.start()
-    order_processor.run()
+    update_thread.start()
+    order_thread.run()

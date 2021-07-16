@@ -18,7 +18,6 @@
 #
 
 import asyncio
-import json
 import logging
 import os
 import sys
@@ -46,7 +45,7 @@ update_queues = set()
 
 producer = create_producer(process_id)
 
-def consume_updates():
+def process_updates():
     consumer = create_update_consumer(process_id)
 
     try:
@@ -61,7 +60,7 @@ def consume_updates():
                 continue
 
             try:
-                item = DataItem.object(json.loads(message.value()))
+                item = DataItem.object(message.value())
             except:
                 traceback.print_exc()
                 continue
@@ -101,7 +100,7 @@ async def create_user():
     user = User()
     user.name = generate_animal_id()
 
-    producer.produce("updates", user.json().encode("ascii"))
+    producer.produce("updates", user.bytes())
 
     return await store.await_item(User, user.id)
 
@@ -134,7 +133,7 @@ async def submit_order(request):
     order = Order(data=await request.json())
     order.creation_time = time.time()
 
-    producer.produce("orders", order.json().encode("ascii"))
+    producer.produce("orders", order.bytes())
 
     return JSONResponse({"error": None})
 
@@ -148,7 +147,7 @@ async def delete_order(request):
 
     order.deletion_time = time.time()
 
-    producer.produce("updates", order.json().encode("ascii"))
+    producer.produce("updates", order.bytes())
 
     return JSONResponse({"error": None})
 
@@ -162,13 +161,13 @@ async def delete_trade(request):
 
     trade.deletion_time = time.time()
 
-    producer.produce("updates", trade.json().encode("ascii"))
+    producer.produce("updates", trade.bytes())
 
     return JSONResponse({"error": None})
 
 if __name__ == "__main__":
-    update_consumer = threading.Thread(target=consume_updates, daemon=True)
-    update_consumer.start()
+    update_thread = threading.Thread(target=process_updates, daemon=True)
+    update_thread.start()
 
     try:
         uvicorn.run(star, host=http_host, port=http_port, log_level="info")

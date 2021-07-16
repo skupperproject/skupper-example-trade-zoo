@@ -2,6 +2,9 @@ image_tag = "quay.io/ssorj/trade-zoo-frontend"
 
 @command
 def build_image(app):
+    with working_dir(".."):
+        run("plano build")
+
     run(f"podman build -t {image_tag} .")
 
 @command

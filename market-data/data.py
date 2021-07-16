@@ -56,8 +56,12 @@ class DataItem:
     def json(self):
         return _json.dumps(self.data())
 
+    def bytes(self):
+        return self.json().encode("utf-8")
+
     @staticmethod
-    def object(data):
+    def object(bytes):
+        data = _json.loads(bytes)
         cls = globals()[data["class"]]
         return cls(data)
 
@@ -144,7 +148,14 @@ def unique_id():
 
 def create_producer(process_id):
     bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
-    config = {"bootstrap.servers": bootstrap_servers}
+
+    config = {
+        "bootstrap.servers": bootstrap_servers,
+        "connections.max.idle.ms": 10_000,
+        "socket.timeout.ms": 10_000,
+        "metadata.max.age.ms": 10_000,
+        "api.version.request": False,
+    }
 
     return _kafka.Producer(config)
 
@@ -155,6 +166,11 @@ def create_update_consumer(group_id):
         "bootstrap.servers": bootstrap_servers,
         "group.id": group_id,
         "auto.offset.reset": "earliest",
+        "enable.auto.commit": False,
+        "connections.max.idle.ms": 10_000,
+        "socket.timeout.ms": 10_000,
+        "metadata.max.age.ms": 10_000,
+        "api.version.request": False,
     }
 
     consumer = _kafka.Consumer(config)

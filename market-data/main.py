@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 store = DataStore()
 process_id = f"market-data-{unique_id()}"
 
-def consume_updates():
+def process_updates():
     consumer = create_update_consumer(process_id)
 
     try:
@@ -46,7 +46,7 @@ def consume_updates():
                 continue
 
             try:
-                item = DataItem.object(json.loads(message.value()))
+                item = DataItem.object(message.value())
             except:
                 traceback.print_exc()
                 continue
@@ -55,7 +55,7 @@ def consume_updates():
     finally:
         consumer.close()
 
-def produce_updates():
+def process_prices():
     producer = create_producer(process_id)
 
     try:
@@ -99,13 +99,13 @@ def update_prices(producer):
                               or curr.ask_price != prev.ask_price
                               or curr.high_price != prev.high_price
                               or curr.low_price != prev.low_price)):
-        producer.produce("updates", curr.json().encode("ascii"))
+        producer.produce("updates", curr.bytes())
 
         print(f"{process_id}: Updated market prices")
 
 if __name__ == "__main__":
-    update_consumer = threading.Thread(target=consume_updates, daemon=True)
-    update_producer = threading.Thread(target=produce_updates, daemon=True)
+    update_thread = threading.Thread(target=process_updates, daemon=True)
+    price_thread = threading.Thread(target=process_prices, daemon=True)
 
-    update_consumer.start()
-    update_producer.run()
+    update_thread.start()
+    price_thread.run()
