@@ -184,7 +184,7 @@ def consume_items(consumer):
             continue
 
         if message.error():
-            print(f"{process_id} Consumer error: {message.error()}")
+            print(f"Consumer error: {message.error()}")
             continue
 
         try:
