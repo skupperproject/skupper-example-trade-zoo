@@ -149,16 +149,24 @@ def unique_id():
     return _binascii.hexlify(uuid_bytes).decode("utf-8")
 
 def _common_config():
+    bootstrap_servers = _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
     return {
-        "bootstrap.servers": _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
+        "bootstrap.servers": bootstrap_servers,
     }
+
+def _common_consumer_config(group_id):
+    config = _common_config()
+    config["group.id"] = group_id
+    config["group.instance.id"] = group_id
+
+    return config
 
 def create_producer():
     return _kafka.Producer(_common_config())
 
 def create_update_consumer(group_id):
-    config = _common_config()
-    config["group.id"] = group_id
+    config = _common_consumer_config(group_id)
     config["auto.offset.reset"] = "earliest"
     config["enable.auto.commit"] = False
 
@@ -168,10 +176,7 @@ def create_update_consumer(group_id):
     return consumer
 
 def create_order_consumer(group_id):
-    config = _common_config()
-    config["group.id"] = group_id
-
-    consumer = _kafka.Consumer(config)
+    consumer = _kafka.Consumer(_common_consumer_config(group_id))
     consumer.subscribe(["orders"])
 
     return consumer

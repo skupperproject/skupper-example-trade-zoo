@@ -45,5 +45,5 @@ metadata:
   labels:
     strimzi.io/cluster: cluster1
 spec:
-  partitions: 3
+  partitions: 6
   replicas: 1

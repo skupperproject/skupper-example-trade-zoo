@@ -73,3 +73,9 @@ def kafka_create_topics(app):
     run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --delete || :", shell=True)
     run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic orders --create --partitions 3", shell=True)
     run(f"~/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --create --partitions 1", shell=True)
+
+@command
+def push_images(app):
+    for dir in ("frontend", "order-processor", "market-data"):
+        with working_dir(dir):
+            run("plano push-image")
