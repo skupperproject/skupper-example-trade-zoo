@@ -111,7 +111,7 @@ async def get_data(request):
             if isinstance(item, Order) and item.execution_time is not None:
                 continue
 
-            if isinstance(item, (User, Order, Trade)) and item.deletion_time is not None:
+            if item.deletion_time is not None:
                 continue
 
             yield {"data": item.json()}
@@ -131,8 +131,6 @@ async def submit_order(request):
     log("Submitting order")
 
     order = Order(data=await request.json())
-    order.creation_time = time.time()
-
     produce_item("orders", order)
 
     log(f"Submitted {order}")
@@ -147,37 +145,31 @@ async def delete_order(request):
     if not order:
         return JSONResponse({"error": "not-found"}, 404)
 
-    order.deletion_time = time.time()
+    order.delete()
     produce_item("updates", order)
 
     return JSONResponse({"error": None})
 
 @star.route("/api/delete-users", methods=["POST"])
 async def delete_users(request):
-    now = time.time()
-
     for user in store.get(User):
-        user.deletion_time = now
+        user.delete()
         produce_item("updates", user)
 
     return JSONResponse({"error": None})
 
 @star.route("/api/delete-orders", methods=["POST"])
 async def delete_orders(request):
-    now = time.time()
-
     for order in store.get(Order):
-        order.deletion_time = now
+        order.delete()
         produce_item("updates", order)
 
     return JSONResponse({"error": None})
 
 @star.route("/api/delete-trades", methods=["POST"])
 async def delete_trades(request):
-    now = time.time()
-
     for trade in store.get(Trade):
-        trade.deletion_time = now
+        trade.delete()
         produce_item("updates", trade)
 
     return JSONResponse({"error": None})

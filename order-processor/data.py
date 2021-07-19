@@ -33,6 +33,10 @@ import uuid as _uuid
 _log = _logging.getLogger("data")
 
 class DataItem:
+    id = None
+    creation_time = None
+    deletion_time = None
+
     def __init__(self, data=None, id=None):
         if data is not None:
             for name, default in _item_attributes(self).items():
@@ -43,9 +47,13 @@ class DataItem:
 
         if self.id is None:
             self.id = unique_id()
+            self.creation_time = _time.time()
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.id})"
+
+    def delete(self):
+        self.deletion_time = _time.time()
 
     def data(self):
         attrs = _item_attributes(self)
@@ -110,35 +118,25 @@ class DataStore:
         return item
 
 class User(DataItem):
-    id = None
     name = None
     pennies = 100
     crackers = 10
-    creation_time = None
-    deletion_time = None
 
 class Order(DataItem):
-    id = None
     user_id = None
     action = None
     quantity = None
     price = None
-    creation_time = None
     execution_time = None
-    deletion_time = None
 
 class Trade(DataItem):
-    id = None
     buyer_id = None
     seller_id = None
     quantity = None
     price = None
-    creation_time = None
-    deletion_time = None
 
 class MarketData(DataItem):
     # The ID for this one is always "crackers"
-    id = None
     bid_price = None
     ask_price = None
     high_price = None
@@ -153,10 +151,6 @@ def unique_id():
 def _common_config():
     return {
         "bootstrap.servers": _os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"),
-        # "connections.max.idle.ms": 10_000,
-        # "socket.timeout.ms": 10_000,
-        # "metadata.max.age.ms": 10_000,
-        # "api.version.request": False,
     }
 
 def create_producer():
@@ -188,6 +182,8 @@ def consume_items(consumer):
 
         if message is None:
             continue
+
+        print(111, message.value())
 
         if message.error():
             print(f"{process_id} Consumer error: {message.error()}")
