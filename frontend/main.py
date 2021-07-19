@@ -80,9 +80,9 @@ async def get_index(request):
 
 @star.route("/admin")
 async def get_admin(request):
-    secret = request.query_params.get("secret")
+    user_id = request.query_params.get("user")
 
-    if secret != "anonymous-animal":
+    if user_id != "anonymous-animal":
         return Response("Forbidden", 403)
 
     return FileResponse("static/admin.html")
