@@ -201,3 +201,4 @@ _producer = _kafka.Producer(_common_config())
 
 def produce_item(topic, item):
     _producer.produce(topic, item.bytes())
+    _producer.flush()
