@@ -183,8 +183,6 @@ def consume_items(consumer):
         if message is None:
             continue
 
-        print(111, message.value())
-
         if message.error():
             print(f"{process_id} Consumer error: {message.error()}")
             continue
