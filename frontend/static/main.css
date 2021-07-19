@@ -67,8 +67,13 @@ select, input:not([type="submit"]) {
     overflow-y: scroll;
 }
 
-#orders > table td, #trades > table td {
+#orders > table td {
     width: 20%;
+    overflow-x: hidden;
+}
+
+#trades > table td {
+    width: 25%;
     overflow-x: hidden;
 }
 

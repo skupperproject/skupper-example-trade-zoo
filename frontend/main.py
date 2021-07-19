@@ -35,7 +35,7 @@ from data import *
 process_id = f"frontend-{unique_id()}"
 
 store = DataStore()
-update_queues = set()
+data_request_queues = set()
 
 def log(message):
     print(f"{process_id}: {message}")
@@ -49,7 +49,7 @@ def process_updates():
         for item in consume_items(consumer):
             store.put(item)
 
-            for queue in update_queues:
+            for queue in data_request_queues:
                 asyncio.run(queue.put(item))
     finally:
         consumer.close()
@@ -77,6 +77,10 @@ async def get_index(request):
         return RedirectResponse(url=f"?user={user.id}")
 
     return FileResponse("static/index.html")
+
+@star.route("/c1fe19e4/admin")
+async def get_admin(request):
+    return FileResponse("static/admin.html")
 
 async def create_user():
     log("Creating user")
@@ -106,13 +110,13 @@ async def get_data(request):
 
             yield {"data": item.json()}
 
-        update_queues.add(queue)
+        data_request_queues.add(queue)
 
         while True:
             yield {"data": (await queue.get()).json()}
 
     async def cleanup():
-        update_queues.remove(queue)
+        data_request_queues.remove(queue)
 
     return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
 
@@ -129,7 +133,7 @@ async def submit_order(request):
 
     return JSONResponse({"error": None})
 
-@star.route("/api/delete-order", methods=["POST"])
+@star.route("/api/cancel-order", methods=["POST"])
 async def delete_order(request):
     order_id = (await request.json())["order"]
     order = store.get(Order, order_id)
@@ -143,17 +147,25 @@ async def delete_order(request):
 
     return JSONResponse({"error": None})
 
-@star.route("/api/delete-trade", methods=["POST"])
-async def delete_trade(request):
-    trade_id = (await request.json())["trade"]
-    trade = store.get(Trade, trade_id)
+@star.route("/api/delete-trades", methods=["POST"])
+async def delete_trades(request):
+    now = time.time()
 
-    if not trade:
-        return JSONResponse({"error": "not-found"}, 404)
+    for trade in store.get(Trade):
+        trade.deletion_time = now
 
-    trade.deletion_time = time.time()
+        produce_item("updates", trade)
 
-    produce_item("updates", trade)
+    return JSONResponse({"error": None})
+
+@star.route("/api/delete-orders", methods=["POST"])
+async def delete_orders(request):
+    now = time.time()
+
+    for order in store.get(Order):
+        order.deletion_time = now
+
+        produce_item("updates", order)
 
     return JSONResponse({"error": None})
 

@@ -84,7 +84,7 @@ window.addEventListener("load", () => {
                 link.addEventListener("click", event => {
                     event.preventDefault();
 
-                    fetch("/api/delete-order", {
+                    fetch("/api/cancel-order", {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify({order: order.id}),
@@ -95,15 +95,13 @@ window.addEventListener("load", () => {
             rows.push([order.id, userName, cap(order.action), order.price, link]);
         }
 
-        if (!rows.length) {
-            gesso.replaceElement($("#orders"), gesso.createDiv(null, "#orders"));
-            return;
-        }
-
         rows.reverse();
 
         const div = gesso.createDiv(null, "#orders");
-        const table = gesso.createTable(div, headings, rows);
+
+        if (rows.length) {
+            gesso.createTable(div, headings, rows);
+        }
 
         gesso.replaceElement($("#orders"), div);
     }
@@ -111,7 +109,7 @@ window.addEventListener("load", () => {
     function renderTrades() {
         const trades = data.get("Trade");
         const users = data.get("User");
-        const headings = ["ID", "Buyer", "Seller", "Price", "Actions"];
+        const headings = ["ID", "Buyer", "Seller", "Price"];
         const rows = new Array();
 
         for (let trade of trades.values()) {
@@ -122,26 +120,16 @@ window.addEventListener("load", () => {
             const buyer = users.get(trade.buyer_id);
             const seller = users.get(trade.seller_id);
 
-            const link = gesso.createLink(null, "", {class: "action-link"});
-            gesso.createText(link, "Delete");
-
-            link.addEventListener("click", event => {
-                event.preventDefault();
-
-                fetch("/api/delete-trade", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({trade: trade.id}),
-                }).then(response => response.json());
-            });
-
-            rows.push([trade.id, buyer.name, seller.name, trade.price, link]);
+            rows.push([trade.id, buyer.name, seller.name, trade.price]);
         }
 
         rows.reverse();
 
         const div = gesso.createDiv(null, "#trades");
-        const table = gesso.createTable(div, headings, rows);
+
+        if (rows.length) {
+            gesso.createTable(div, headings, rows);
+        }
 
         gesso.replaceElement($("#trades"), div);
     }
@@ -190,9 +178,7 @@ window.addEventListener("load", () => {
 
         fetch("/api/submit-order", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(data),
         }).then(response => response.json());
     });
