@@ -406,6 +406,8 @@ _animals = [
 ]
 
 def generate_animal_id():
+    _random.seed()
+
     animal = _random.choice(_animals)
 
     if type(animal) is tuple:

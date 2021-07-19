@@ -22,19 +22,70 @@
 "use strict";
 
 window.addEventListener("load", () => {
+    const gesso = new Gesso();
+    const dataSource = new EventSource("/api/data");
+    const data = new Map();
+
+    data.set("User", new Map());
+    data.set("Order", new Map());
+    data.set("Trade", new Map());
+    data.set("MarketData", new Map());
+
+    function renderUsers() {
+        const users = data.get("User");
+        const headings = ["ID", "Name", "Pennies", "Crackers"];
+        const rows = new Array();
+
+        for (let user of users.values()) {
+            if (user.deletion_time !== null) {
+                continue;
+            }
+
+            rows.push([user.id, user.name, user.pennies, user.crackers]);
+        }
+
+        rows.sort((a, b) => (a[2] < b[2]) ? 1 : -1)
+
+        const div = gesso.createDiv(null, "#users");
+
+        if (rows.length) {
+            gesso.createTable(div, headings, rows);
+        }
+
+        gesso.replaceElement($("#users"), div);
+    }
+
+    dataSource.onmessage = event => {
+        const item = JSON.parse(event.data);
+
+        data.get(item.class).set(item.id, item);
+
+        switch (item.class) {
+        case "User":
+            renderUsers();
+            break;
+        }
+    };
+
     $("#action-form").addEventListener("submit", event => {
         event.preventDefault();
 
-        if (event.submitter.value == "delete-orders") {
+        switch (event.submitter.value) {
+        case "delete-users":
+            fetch("/api/delete-users", {
+                method: "POST",
+            }).then(response => response.json());
+            break;
+        case "delete-orders":
             fetch("/api/delete-orders", {
                 method: "POST",
             }).then(response => response.json());
-        }
-
-        if (event.submitter.value == "delete-trades") {
+            break;
+        case "delete-trades":
             fetch("/api/delete-trades", {
                 method: "POST",
             }).then(response => response.json());
+            break;
         }
     });
 });

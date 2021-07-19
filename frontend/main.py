@@ -26,7 +26,7 @@ import uvicorn
 from sse_starlette.sse import EventSourceResponse
 from starlette.applications import Starlette
 from starlette.background import BackgroundTask
-from starlette.responses import FileResponse, JSONResponse, RedirectResponse
+from starlette.responses import Response, FileResponse, JSONResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from animalid import generate_animal_id
@@ -78,8 +78,13 @@ async def get_index(request):
 
     return FileResponse("static/index.html")
 
-@star.route("/c1fe19e4/admin")
+@star.route("/admin")
 async def get_admin(request):
+    secret = request.query_params.get("secret")
+
+    if secret != "anonymous-animal":
+        return Response("Forbidden", 403)
+
     return FileResponse("static/admin.html")
 
 async def create_user():
@@ -87,6 +92,7 @@ async def create_user():
 
     user = User()
     user.name = generate_animal_id()
+    user.creation_time = time.time()
 
     produce_item("updates", user)
 
@@ -105,7 +111,7 @@ async def get_data(request):
             if isinstance(item, Order) and item.execution_time is not None:
                 continue
 
-            if isinstance(item, (Order, Trade)) and item.deletion_time is not None:
+            if isinstance(item, (User, Order, Trade)) and item.deletion_time is not None:
                 continue
 
             yield {"data": item.json()}
@@ -142,19 +148,17 @@ async def delete_order(request):
         return JSONResponse({"error": "not-found"}, 404)
 
     order.deletion_time = time.time()
-
     produce_item("updates", order)
 
     return JSONResponse({"error": None})
 
-@star.route("/api/delete-trades", methods=["POST"])
-async def delete_trades(request):
+@star.route("/api/delete-users", methods=["POST"])
+async def delete_users(request):
     now = time.time()
 
-    for trade in store.get(Trade):
-        trade.deletion_time = now
-
-        produce_item("updates", trade)
+    for user in store.get(User):
+        user.deletion_time = now
+        produce_item("updates", user)
 
     return JSONResponse({"error": None})
 
@@ -164,8 +168,17 @@ async def delete_orders(request):
 
     for order in store.get(Order):
         order.deletion_time = now
-
         produce_item("updates", order)
+
+    return JSONResponse({"error": None})
+
+@star.route("/api/delete-trades", methods=["POST"])
+async def delete_trades(request):
+    now = time.time()
+
+    for trade in store.get(Trade):
+        trade.deletion_time = now
+        produce_item("updates", trade)
 
     return JSONResponse({"error": None})
 

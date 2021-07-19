@@ -114,6 +114,8 @@ class User(DataItem):
     name = None
     pennies = 100
     crackers = 10
+    creation_time = None
+    deletion_time = None
 
 class Order(DataItem):
     id = None
