@@ -182,4 +182,19 @@ window.addEventListener("load", () => {
             body: JSON.stringify(data),
         }).then(response => response.json());
     });
+
+    $("#admin-link").addEventListener("click", event => {
+        const password = prompt("Password");
+
+        if (password === null) {
+            event.preventDefault();
+            return;
+        }
+
+        if (password == "animal") {
+            event.preventDefault();
+            window.location.href = "/admin?user=animal";
+            return;
+        }
+    });
 });

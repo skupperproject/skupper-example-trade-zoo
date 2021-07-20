@@ -82,7 +82,7 @@ async def get_index(request):
 async def get_admin(request):
     user_id = request.query_params.get("user")
 
-    if user_id != "anonymous-animal":
+    if user_id != "animal":
         return Response("Forbidden", 403)
 
     return FileResponse("static/admin.html")
@@ -154,7 +154,7 @@ async def delete_order(request):
 async def delete_users(request):
     for user in store.get(User):
         user.delete()
-        produce_item("updates", user)
+        produce_item("updates", user, flush=False)
 
     return JSONResponse({"error": None})
 
@@ -162,7 +162,7 @@ async def delete_users(request):
 async def delete_orders(request):
     for order in store.get(Order):
         order.delete()
-        produce_item("updates", order)
+        produce_item("updates", order, flush=False)
 
     return JSONResponse({"error": None})
 
@@ -170,7 +170,7 @@ async def delete_orders(request):
 async def delete_trades(request):
     for trade in store.get(Trade):
         trade.delete()
-        produce_item("updates", trade)
+        produce_item("updates", trade, flush=False)
 
     return JSONResponse({"error": None})
 
