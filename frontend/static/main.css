@@ -67,14 +67,16 @@ select, input:not([type="submit"]) {
     overflow-y: scroll;
 }
 
-#orders > table td {
-    width: 20%;
-    overflow-x: hidden;
+#orders > table th {
+    width: 15%;
 }
 
-#trades > table td {
+#orders > table th:nth-child(2) {
+    width: 30%;
+}
+
+#trades > table th {
     width: 25%;
-    overflow-x: hidden;
 }
 
 h2 {
