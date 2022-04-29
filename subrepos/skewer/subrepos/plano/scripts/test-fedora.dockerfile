@@ -21,7 +21,7 @@ FROM fedora
 
 RUN dnf -qy update && dnf -q clean all
 
-RUN dnf -y install make python2 findutils
+RUN dnf -y install make python2 findutils python3-pyyaml
 
 COPY . /root/plano
 WORKDIR /root/plano

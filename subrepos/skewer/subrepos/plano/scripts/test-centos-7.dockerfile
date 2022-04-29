@@ -23,7 +23,7 @@ RUN yum -q -y update && yum -q clean all
 
 RUN yum -y install epel-release
 
-RUN yum -y install make python36
+RUN yum -y install make python2-pyyaml python36 python36-PyYAML
 
 COPY . /root/plano
 WORKDIR /root/plano

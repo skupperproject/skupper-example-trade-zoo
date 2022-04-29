@@ -21,7 +21,7 @@ FROM centos:8
 
 RUN dnf -qy update && dnf -q clean all
 
-RUN dnf -y install make python2 python3
+RUN dnf -y install make python2 python2-pyyaml python3 python3-pyyaml
 
 COPY . /root/plano
 WORKDIR /root/plano

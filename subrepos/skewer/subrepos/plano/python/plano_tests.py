@@ -437,6 +437,12 @@ def io_operations():
         result = read(file_d)
         assert result == "frontM@middle@back", result
 
+        file_e = write("e", "123")
+        file_f = write("f", "456")
+        concatenate("g", (file_e, "not-there", file_f))
+        result = read("g")
+        assert result == "123456", result
+
 @test
 def iterable_operations():
     result = unique([1, 1, 1, 2, 2, 3])
@@ -998,6 +1004,30 @@ def value_operations():
 
     other = Namespace(a=1, b=2, c=3)
     assert result != other, (result, other)
+
+@test
+def yaml_operations():
+    try:
+        import yaml as _yaml
+    except ImportError:
+        raise PlanoTestSkipped("PyYAML is not available")
+
+    with working_dir():
+        input_data = {
+            "alpha": [1, 2, 3],
+        }
+
+        file_a = write_yaml("a", input_data)
+        output_data = read_yaml(file_a)
+
+        assert input_data == output_data, (input_data, output_data)
+
+        yaml = read(file_a)
+        parsed_data = parse_yaml(yaml)
+        emitted_yaml = emit_yaml(input_data)
+
+        assert input_data == parsed_data, (input_data, parsed_data)
+        assert yaml == emitted_yaml, (yaml, emitted_yaml)
 
 @test
 def plano_command():
