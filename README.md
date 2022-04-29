@@ -16,13 +16,15 @@ across cloud providers, data centers, and edge sites.
 * [Overview](#overview)
 * [Prerequisites](#prerequisites)
 * [Step 1: Configure separate console sessions](#step-1-configure-separate-console-sessions)
-* [Step 2: Log in to your clusters](#step-2-log-in-to-your-clusters)
+* [Step 2: Access your clusters](#step-2-access-your-clusters)
 * [Step 3: Set up your namespaces](#step-3-set-up-your-namespaces)
 * [Step 4: Install Skupper in your namespaces](#step-4-install-skupper-in-your-namespaces)
-* [Step 5: Link your namespaces](#step-5-link-your-namespaces)
-* [Step 6: Deploy the Kafka cluster](#step-6-deploy-the-kafka-cluster)
-* [Step 7: Expose the Kafka cluster](#step-7-expose-the-kafka-cluster)
-* [Step 8: Deploy the application services](#step-8-deploy-the-application-services)
+* [Step 5: Check the status of your namespaces](#step-5-check-the-status-of-your-namespaces)
+* [Step 6: Link your namespaces](#step-6-link-your-namespaces)
+* [Step 7: Deploy the Kafka cluster](#step-7-deploy-the-kafka-cluster)
+* [Step 8: Expose the Kafka cluster](#step-8-expose-the-kafka-cluster)
+* [Step 9: Deploy the application services](#step-9-deploy-the-application-services)
+* [Step 10: Test the application](#step-10-test-the-application)
 * [Cleaning up](#cleaning-up)
 * [Next steps](#next-steps)
 
@@ -67,11 +69,11 @@ to represent the private data center and public cloud.
 * The `skupper` command-line tool, the latest version ([installation
   guide][install-skupper])
 
-* Access to two Kubernetes namespaces, from any providers you choose,
-  on any clusters you choose
+* Access to at least one Kubernetes cluster, from any provider you
+  choose
 
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-[install-skupper]: https://skupper.io/start/index.html#step-1-install-the-skupper-command-line-tool-in-your-environment
+[install-skupper]: https://skupper.io/install/index.html
 
 ## Step 1: Configure separate console sessions
 
@@ -106,19 +108,20 @@ Console for _private_:
 export KUBECONFIG=~/.kube/config-private
 ~~~
 
-## Step 2: Log in to your clusters
+## Step 2: Access your clusters
 
-The methods for logging in vary by Kubernetes provider.  Find
-the instructions for your chosen providers and use them to
-authenticate and configure access for each console session.  See
-the following links for more information:
+The methods for accessing your clusters vary by Kubernetes provider.
+Find the instructions for your chosen providers and use them to
+authenticate and configure access for each console session.  See the
+following links for more information:
 
-* [Minikube](https://skupper.io/start/minikube.html#logging-in)
-* [Amazon Elastic Kubernetes Service (EKS)](https://docs.aws.amazon.com/eks/latest/userguide/create-kubeconfig.html)
-* [Azure Kubernetes Service (AKS)](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster)
-* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html#logging-in)
-* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html#logging-in)
-* [OpenShift](https://skupper.io/start/openshift.html#logging-in)
+* [Minikube](https://skupper.io/start/minikube.html)
+* [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
+* [Azure Kubernetes Service (AKS)](https://skupper.io/start/aks.html)
+* [Google Kubernetes Engine (GKE)](https://skupper.io/start/gke.html)
+* [IBM Kubernetes Service](https://skupper.io/start/ibmks.html)
+* [OpenShift](https://skupper.io/start/openshift.html)
+* [More providers](https://kubernetes.io/partners/#kcsp)
 
 ## Step 3: Set up your namespaces
 
@@ -146,10 +149,10 @@ The `skupper init` command installs the Skupper router and service
 controller in the current namespace.  Run the `skupper init` command
 in each namespace.
 
-[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
-
 **Note:** If you are using Minikube, [you need to start `minikube
 tunnel`][minikube-tunnel] before you install Skupper.
+
+[minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
 Console for _public_:
 
@@ -160,18 +163,47 @@ skupper init
 Console for _private_:
 
 ~~~ shell
-skupper init --ingress none
+skupper init
 ~~~
 
-## Step 5: Link your namespaces
+## Step 5: Check the status of your namespaces
+
+Use `skupper status` in each console to check that Skupper is
+installed.
+
+Console for _public_:
+
+~~~ shell
+skupper status
+~~~
+
+Console for _private_:
+
+~~~ shell
+skupper status
+~~~
+
+You should see output like this for each namespace:
+
+~~~
+Skupper is enabled for namespace "<namespace>" in interior mode. It is not connected to any other sites. It has no exposed services.
+The site console url is: http://<address>:8080
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+~~~
+
+As you move through the steps below, you can use `skupper status` at
+any time to check your progress.
+
+## Step 6: Link your namespaces
 
 Creating a link requires use of two `skupper` commands in conjunction,
 `skupper token create` and `skupper link create`.
 
 The `skupper token create` command generates a secret token that
 signifies permission to create a link.  The token also carries the
-link details.  The `skupper link create` command then uses the link
-token to create a link to the namespace that generated it.
+link details.  Then, in a remote namespace, The `skupper link create`
+command uses the token to create a link to the namespace that
+generated it.
 
 **Note:** The link token is truly a *secret*.  Anyone who has the
 token can link to your namespace.  Make sure that only those you trust
@@ -193,7 +225,7 @@ skupper link create ~/public.token
 skupper link status --wait 30
 ~~~
 
-## Step 6: Deploy the Kafka cluster
+## Step 7: Deploy the Kafka cluster
 
 In the private namespace, use the `kubectl create` and `kubectl
 apply` commands with the listed YAML files to install the
@@ -207,7 +239,7 @@ kubectl apply -f kafka-cluster/cluster1.yaml
 kubectl wait --for condition=ready --timeout 540s kafka/cluster1
 ~~~
 
-## Step 7: Expose the Kafka cluster
+## Step 8: Expose the Kafka cluster
 
 In the private namespace, use `skupper expose` with the
 `--headless` option to expose the Kafka cluster as a headless
@@ -229,7 +261,10 @@ Console for _public_:
 kubectl get services
 ~~~
 
-## Step 8: Deploy the application services
+## Step 9: Deploy the application services
+
+In the public namespace, use the `kubectl apply` command with
+the listed YAML files to install the application services.
 
 Console for _public_:
 
@@ -237,6 +272,16 @@ Console for _public_:
 kubectl apply -f order-processor/kubernetes.yaml
 kubectl apply -f market-data/kubernetes.yaml
 kubectl apply -f frontend/kubernetes.yaml
+~~~
+
+## Step 10: Test the application
+
+Look up the external URL and use `curl` to send a request.
+
+Console for _public_:
+
+~~~ shell
+curl $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
 ~~~
 
 ## Cleaning up

@@ -55,7 +55,7 @@ steps:
         - run: skupper link create ~/public.token
         - run: skupper link status --wait 30
   - title: Deploy the Kafka cluster
-    preamble: |-
+    preamble: |
       In the private namespace, use the `kubectl create` and `kubectl
       apply` commands with the listed YAML files to install the
       operator and deploy the cluster and topic.
@@ -65,7 +65,7 @@ steps:
         - run: kubectl apply -f kafka-cluster/cluster1.yaml
         - run: kubectl wait --for condition=ready --timeout 540s kafka/cluster1
   - title: Expose the Kafka cluster
-    preamble: |-
+    preamble: |
       In the private namespace, use `skupper expose` with the
       `--headless` option to expose the Kafka cluster as a headless
       service on the Skupper network.
@@ -80,12 +80,22 @@ steps:
         - run: kubectl get services
           await: [service/cluster1-kafka-brokers]
   - title: Deploy the application services
+    preamble: |
+      In the public namespace, use the `kubectl apply` command with
+      the listed YAML files to install the application services.
     commands:
       public:
         - run: kubectl apply -f order-processor/kubernetes.yaml
         - run: kubectl apply -f market-data/kubernetes.yaml
         - run: kubectl apply -f frontend/kubernetes.yaml
-          sleep: 86400
+          await_external_ip: [service/frontend]
+          sleep: 10
+  - title: Test the application
+    preamble: |
+      Look up the external URL and use `curl` to send a request.
+    commands:
+      public:
+        - run: "curl $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')"
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:
