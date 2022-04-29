@@ -1,30 +1,47 @@
 from skewer import *
 
+@command
 def run_(app):
     build(app)
 
-    with working_dir("order-processor"):
-        order1 = start("python3 main.py")
-        order2 = start("python3 main.py")
+    procs = list()
 
-    with working_dir("market-data"):
-        data1 = start("python3 main.py")
-
-    with working_dir("frontend"):
-        frontend1 = start("python3 main.py")
-
-        with working_env(HTTP_PORT=8081):
-            frontend2 = start("python3 main.py")
+    remove("/tmp/kafka-logs")
+    remove("/tmp/zookeeper")
 
     try:
-        while True:
-            sleep(86400)
+        with working_dir(join(get_home_dir(), "kafka")):
+            procs.append(start("bin/zookeeper-server-start.sh config/zookeeper.properties"))
+
+            await_port(2181)
+
+            procs.append(start("bin/kafka-server-start.sh config/server.properties"))
+
+            await_port(9092)
+
+            run("bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic orders --delete", check=False)
+            run("bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --delete", check=False)
+            run("bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic orders --create --partitions 3")
+            run("bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic updates --create --partitions 1")
+
+        with working_dir("order-processor"):
+            procs.append(start("python3 main.py"))
+            procs.append(start("python3 main.py"))
+
+        with working_dir("market-data"):
+            procs.append(start("python3 main.py"))
+
+        with working_dir("frontend"):
+            procs.append(start("python3 main.py"))
+
+            with working_env(HTTP_PORT=8081):
+                procs.append(start("python3 main.py"))
+
+            while True:
+                sleep(86400)
     finally:
-        kill(order1)
-        kill(order2)
-        kill(data1)
-        kill(frontend1)
-        kill(frontend2)
+        for proc in reversed(procs):
+            kill(proc)
 
 @command
 def build(app):

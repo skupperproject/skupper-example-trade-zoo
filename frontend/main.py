@@ -83,7 +83,7 @@ async def get_admin(request):
     user_id = request.query_params.get("user")
 
     if user_id != "animal":
-        return Response("Forbidden", 403)
+        return Response("Forbidden\n", 403)
 
     return FileResponse("static/admin.html")
 
@@ -129,7 +129,7 @@ async def get_data(request):
 @star.route("/api/health")
 async def get_health(request):
     store.get()
-    return Response("OK", 200)
+    return Response("OK\n", 200)
 
 @star.route("/api/submit-order", methods=["POST"])
 async def submit_order(request):

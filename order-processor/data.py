@@ -154,7 +154,6 @@ def _kafka_config():
 def _kafka_consumer_config(group_id):
     config = _kafka_config()
     config["group.id"] = group_id
-    config["group.instance.id"] = group_id
 
     return config
 
