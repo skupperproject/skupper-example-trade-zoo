@@ -1,6 +1,6 @@
-# Trade Zoo with Kafka and Skupper
+# Trade Zoo
 
-[![main](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-kafka/actions/workflows/main.yaml)
+[![main](https://github.com/ssorj/skupper-example-trade-zoo/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-trade-zoo/actions/workflows/main.yaml)
 
 #### A simple trading application that runs in the public cloud but keeps its data in a private Kafka cluster
 
@@ -281,7 +281,7 @@ Look up the external URL and use `curl` to send a request.
 Console for _public_:
 
 ~~~ shell
-curl $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
+curl --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
 ~~~
 
 ## Cleaning up

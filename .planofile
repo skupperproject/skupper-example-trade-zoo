@@ -1,6 +1,5 @@
 from skewer import *
 
-@command(name="run")
 def run_(app):
     build(app)
 
@@ -24,7 +23,6 @@ def run_(app):
         kill(order1)
         kill(order2)
         kill(data1)
-        # kill(maker1)
         kill(frontend1)
         kill(frontend2)
 
@@ -78,4 +76,4 @@ def kafka_create_topics(app):
 def push_images(app):
     for dir in ("frontend", "order-processor", "market-data"):
         with working_dir(dir):
-            run("plano push-image")
+            run("plano push")

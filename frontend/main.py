@@ -126,6 +126,11 @@ async def get_data(request):
 
     return EventSourceResponse(generate(), background=BackgroundTask(cleanup))
 
+@star.route("/api/health")
+async def get_health(request):
+    store.get()
+    return Response("OK", 200)
+
 @star.route("/api/submit-order", methods=["POST"])
 async def submit_order(request):
     log("Submitting order")
