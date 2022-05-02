@@ -21,8 +21,9 @@
 
 "use strict";
 
+import * as gesso from "./gesso/gesso.js";
+
 window.addEventListener("load", () => {
-    const gesso = new Gesso();
     const dataSource = new EventSource("/api/data");
     const data = new Map();
 

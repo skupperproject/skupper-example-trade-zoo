@@ -1,7 +1,4 @@
-@import url("/static/general.css");
-@import url("/static/layout.css");
-@import url("/static/tables.css");
-@import url("/static/forms.css");
+@import url("./gesso/gesso.css");
 
 #top-tile {
     display: flex;
