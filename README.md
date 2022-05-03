@@ -222,8 +222,13 @@ Console for _private_:
 
 ~~~ shell
 skupper link create ~/public.token
-skupper link status --wait 30
 ~~~
+
+If your console sessions are on different machines, you may need to
+use `scp` or a similar tool to transfer the token.
+
+You can use the `skupper link status` command to see if linking
+succeeded.
 
 ## Step 7: Deploy the Kafka cluster
 
@@ -276,13 +281,25 @@ kubectl apply -f frontend/kubernetes.yaml
 
 ## Step 10: Test the application
 
-Look up the external URL and use `curl` to send a request.
+In the public namespace, use `kubectl get service/frontend` to
+look up the external URL of the frontend service.  Then use curl
+to check the `/api/health` endpoint.
 
 Console for _public_:
 
 ~~~ shell
-curl --verbose --retry 30 --retry-connrefused --retry-delay 1 $(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080/api/health')
+FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')
+curl $FRONTEND/api/health
 ~~~
+
+Sample output:
+
+~~~
+OK
+~~~
+
+If everything is in order, you can now access the application
+using your browser by navigating to the external URL.
 
 ## Cleaning up
 
