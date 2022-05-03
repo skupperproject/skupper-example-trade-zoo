@@ -282,8 +282,8 @@ kubectl apply -f frontend/kubernetes.yaml
 ## Step 10: Test the application
 
 In the public namespace, use `kubectl get service/frontend` to
-look up the external URL of the frontend service.  Then use curl
-to check the `/api/health` endpoint.
+look up the external URL of the frontend service.  Then use
+`curl` or a similar tool to request the `/api/health` endpoint.
 
 Console for _public_:
 
@@ -299,7 +299,8 @@ OK
 ~~~
 
 If everything is in order, you can now access the application
-using your browser by navigating to the external URL.
+using your browser by navigating to the URL stored in
+`$FRONTEND`.
 
 ## Cleaning up
 
