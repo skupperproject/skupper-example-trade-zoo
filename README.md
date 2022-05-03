@@ -1,6 +1,6 @@
 # Trade Zoo
 
-[![main](https://github.com/ssorj/skupper-example-trade-zoo/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-trade-zoo/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skupper-example-trade-zoo/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-trade-zoo/actions/workflows/main.yaml)
 
 #### A simple trading application that runs in the public cloud but keeps its data in a private Kafka cluster
 
