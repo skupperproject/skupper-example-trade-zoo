@@ -1,4 +1,4 @@
-image_tag = "quay.io/ssorj/trade-zoo-order-processor"
+image_tag = "quay.io/skupper/trade-zoo-order-processor"
 
 @command
 def build(app):

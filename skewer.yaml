@@ -94,8 +94,8 @@ steps:
   - title: Test the application
     preamble: |
       In the public namespace, use `kubectl get service/frontend` to
-      look up the external URL of the frontend service.  Then use curl
-      to check the `/api/health` endpoint.
+      look up the external URL of the frontend service.  Then use
+      `curl` or a similar tool to request the `/api/health` endpoint.
     commands:
       public:
         - run: "FRONTEND=$(kubectl get service/frontend -o jsonpath='http://{.status.loadBalancer.ingress[0].ip}:8080')"
@@ -106,7 +106,8 @@ steps:
             OK
     postamble: |
       If everything is in order, you can now access the application
-      using your browser by navigating to the external URL.
+      using your browser by navigating to the URL stored in
+      `$FRONTEND`.
 cleaning_up:
   preamble: !string cleaning_up_preamble
   commands:

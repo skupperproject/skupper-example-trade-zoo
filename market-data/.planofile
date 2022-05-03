@@ -1,4 +1,4 @@
-image_tag = "quay.io/ssorj/trade-zoo-market-data"
+image_tag = "quay.io/skupper/trade-zoo-market-data"
 
 @command
 def build(app):

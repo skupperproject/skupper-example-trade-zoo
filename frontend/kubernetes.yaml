@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: quay.io/ssorj/trade-zoo-frontend
+          image: quay.io/skupper/trade-zoo-frontend
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: cluster1-kafka-brokers:9092

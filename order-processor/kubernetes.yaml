@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: order-processor
-          image: quay.io/ssorj/trade-zoo-order-processor
+          image: quay.io/skupper/trade-zoo-order-processor
           env:
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: cluster1-kafka-brokers:9092
