@@ -291,7 +291,7 @@ operator and deploy the cluster and topic.
 ~~~ shell
 kubectl create -f kafka-cluster/strimzi.yaml
 kubectl apply -f kafka-cluster/cluster1.yaml
-kubectl wait --for condition=ready --timeout 540s kafka/cluster1
+kubectl wait --for condition=ready --timeout 900s kafka/cluster1
 ~~~
 
 ## Step 8: Expose the Kafka cluster

@@ -56,7 +56,7 @@ steps:
       private:
         - run: kubectl create -f kafka-cluster/strimzi.yaml
         - run: kubectl apply -f kafka-cluster/cluster1.yaml
-        - run: kubectl wait --for condition=ready --timeout 540s kafka/cluster1
+        - run: kubectl wait --for condition=ready --timeout 900s kafka/cluster1
   - title: Expose the Kafka cluster
     preamble: |
       In the private namespace, use `skupper expose` with the
