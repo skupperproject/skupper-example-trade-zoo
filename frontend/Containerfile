@@ -1,13 +1,12 @@
-FROM registry.fedoraproject.org/fedora-minimal:34
+FROM registry.fedoraproject.org/fedora-minimal:36
 
-RUN microdnf -y install python3 && microdnf clean all
+RUN microdnf -y install gcc librdkafka-devel python3-devel python3-pip && microdnf clean all
 
-RUN pip3 install starlette sse_starlette confluent_kafka uvicorn
+RUN pip install starlette sse_starlette confluent_kafka uvicorn
 
-ADD main.py /app/main.py
-ADD animalid.py /app/animalid.py
-ADD data.py /app/data.py
-ADD static /app/static
+COPY python /app/python
+COPY static /app/static
 
 WORKDIR /app
-ENTRYPOINT ["python3", "main.py"]
+
+ENTRYPOINT ["python3", "python/main.py"]

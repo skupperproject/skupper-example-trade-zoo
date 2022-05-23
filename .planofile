@@ -46,7 +46,7 @@ def run_(app):
 @command
 def build(app):
     for dir in ("frontend", "order-processor", "market-data"):
-        copy("python/data.py", join(dir, "data.py"))
+        copy("python/data.py", join(dir, "python/data.py"))
 
 @command
 def clean(app):
