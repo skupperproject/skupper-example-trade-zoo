@@ -81,7 +81,6 @@ steps:
         - run: kubectl apply -f order-processor/kubernetes.yaml
         - run: kubectl apply -f market-data/kubernetes.yaml
         - run: kubectl apply -f frontend/kubernetes.yaml
-          await_external_ip: [service/frontend]
   - standard: test_the_application
 cleaning_up:
   preamble: !string cleaning_up_preamble
