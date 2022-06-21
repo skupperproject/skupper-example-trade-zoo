@@ -314,7 +314,7 @@ In the private namespace, use `skupper expose` with the
 `--headless` option to expose the Kafka cluster as a headless
 service on the Skupper network.
 
-Then, in the public namespace, use `kubectl get services` to
+Then, in the public namespace, use `kubectl get service` to
 check that the `cluster1-kafka-brokers` service appears after a
 moment.
 
@@ -327,7 +327,7 @@ skupper expose statefulset/cluster1-kafka --headless --port 9092
 _**Console for public:**_
 
 ~~~ shell
-kubectl get services
+kubectl get service/cluster1-kafka-brokers
 ~~~
 
 **Note:**
@@ -415,8 +415,8 @@ secret/skupper-console-users` to look up the console admin
 password.
 
 **Note:** The `<console-url>` and `<password>` fields in the
-following commands are placeholders.  The actual values are
-specific to your environment.
+following output are placeholders.  The actual values are specific
+to your environment.
 
 _**Console for public:**_
 

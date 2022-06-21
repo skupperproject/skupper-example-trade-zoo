@@ -61,15 +61,14 @@ steps:
       `--headless` option to expose the Kafka cluster as a headless
       service on the Skupper network.
 
-      Then, in the public namespace, use `kubectl get services` to
+      Then, in the public namespace, use `kubectl get service` to
       check that the `cluster1-kafka-brokers` service appears after a
       moment.
     commands:
       private:
         - run: skupper expose statefulset/cluster1-kafka --headless --port 9092
       public:
-        - run: kubectl get services
-          await: [service/cluster1-kafka-brokers]
+        - run: kubectl get service/cluster1-kafka-brokers
     postamble: |
       **Note:**
 
@@ -108,6 +107,7 @@ steps:
       the listed YAML files to install the application services.
     commands:
       public:
+        - await: service/cluster1-kafka-brokers
         - run: kubectl apply -f order-processor/kubernetes.yaml
         - run: kubectl apply -f market-data/kubernetes.yaml
         - run: kubectl apply -f frontend/kubernetes.yaml
