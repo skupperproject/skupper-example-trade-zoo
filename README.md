@@ -4,12 +4,14 @@
 
 #### A simple trading application that runs in the public cloud but keeps its data in a private Kafka cluster
 
+
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
 across cloud providers, data centers, and edge sites.
 
 [website]: https://skupper.io/
 [examples]: https://skupper.io/examples/index.html
+
 
 #### Contents
 
@@ -25,8 +27,8 @@ across cloud providers, data centers, and edge sites.
 * [Step 8: Expose the Kafka cluster](#step-8-expose-the-kafka-cluster)
 * [Step 9: Deploy the application services](#step-9-deploy-the-application-services)
 * [Step 10: Test the application](#step-10-test-the-application)
+* [Accessing the web console](#accessing-the-web-console)
 * [Cleaning up](#cleaning-up)
-* [Next steps](#next-steps)
 
 ## Overview
 
@@ -59,9 +61,9 @@ The example uses two Kubernetes namespaces, "private" and "public",
 to represent the private data center and public cloud.
 
 [strimzi]: https://strimzi.io/
-[quarkus]: https://quarkus.io/
 
 ## Prerequisites
+
 
 * The `kubectl` command-line tool, version 1.15 or later
   ([installation guide][install-kubectl])
@@ -75,12 +77,13 @@ to represent the private data center and public cloud.
 [install-kubectl]: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 [install-skupper]: https://skupper.io/install/index.html
 
+
 ## Step 1: Configure separate console sessions
 
 Skupper is designed for use with multiple namespaces, typically on
 different clusters.  The `skupper` command uses your
-[kubeconfig][kubeconfig] and current context to select the namespace
-where it operates.
+[kubeconfig][kubeconfig] and current context to select the
+namespace where it operates.
 
 [kubeconfig]: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
 
@@ -96,13 +99,13 @@ Start a console session for each of your namespaces.  Set the
 `KUBECONFIG` environment variable to a different path in each
 session.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-public
 ~~~
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-private
@@ -110,10 +113,10 @@ export KUBECONFIG=~/.kube/config-private
 
 ## Step 2: Access your clusters
 
-The methods for accessing your clusters vary by Kubernetes provider.
-Find the instructions for your chosen providers and use them to
-authenticate and configure access for each console session.  See the
-following links for more information:
+The methods for accessing your clusters vary by Kubernetes
+provider. Find the instructions for your chosen providers and use
+them to authenticate and configure access for each console
+session.  See the following links for more information:
 
 * [Minikube](https://skupper.io/start/minikube.html)
 * [Amazon Elastic Kubernetes Service (EKS)](https://skupper.io/start/eks.html)
@@ -125,18 +128,18 @@ following links for more information:
 
 ## Step 3: Set up your namespaces
 
-Use `kubectl create namespace` to create the namespaces you wish to
-use (or use existing namespaces).  Use `kubectl config set-context` to
-set the current namespace for each session.
+Use `kubectl create namespace` to create the namespaces you wish
+to use (or use existing namespaces).  Use `kubectl config
+set-context` to set the current namespace for each session.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 kubectl create namespace public
 kubectl config set-context --current --namespace public
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ kubectl create namespace public
@@ -146,14 +149,14 @@ $ kubectl config set-context --current --namespace public
 Context "minikube" modified.
 ~~~
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 kubectl create namespace private
 kubectl config set-context --current --namespace private
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ kubectl create namespace private
@@ -174,13 +177,13 @@ tunnel`][minikube-tunnel] before you install Skupper.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 skupper init
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ skupper init
@@ -188,13 +191,13 @@ Waiting for LoadBalancer IP or hostname...
 Skupper is now installed in namespace 'public'.  Use 'skupper status' to get more information.
 ~~~
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 skupper init
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ skupper init
@@ -207,23 +210,33 @@ Skupper is now installed in namespace 'private'.  Use 'skupper status' to get mo
 Use `skupper status` in each console to check that Skupper is
 installed.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 skupper status
 ~~~
 
-**Console for _private_:**
+_Sample output:_
+
+~~~ console
+$ skupper status
+Skupper is enabled for namespace "public" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+The site console url is: <console-url>
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+~~~
+
+_**Console for private:**_
 
 ~~~ shell
 skupper status
 ~~~
 
-You should see output like this for each namespace:
+_Sample output:_
 
-~~~
-Skupper is enabled for namespace "<namespace>" in interior mode. It is not connected to any other sites. It has no exposed services.
-The site console url is: http://<address>:8080
+~~~ console
+$ skupper status
+Skupper is enabled for namespace "private" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+The site console url is: <console-url>
 The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
 ~~~
 
@@ -232,42 +245,43 @@ any time to check your progress.
 
 ## Step 6: Link your namespaces
 
-Creating a link requires use of two `skupper` commands in conjunction,
-`skupper token create` and `skupper link create`.
+Creating a link requires use of two `skupper` commands in
+conjunction, `skupper token create` and `skupper link create`.
 
 The `skupper token create` command generates a secret token that
 signifies permission to create a link.  The token also carries the
-link details.  Then, in a remote namespace, The `skupper link create`
-command uses the token to create a link to the namespace that
-generated it.
+link details.  Then, in a remote namespace, The `skupper link
+create` command uses the token to create a link to the namespace
+that generated it.
 
 **Note:** The link token is truly a *secret*.  Anyone who has the
-token can link to your namespace.  Make sure that only those you trust
-have access to it.
+token can link to your namespace.  Make sure that only those you
+trust have access to it.
 
 First, use `skupper token create` in one namespace to generate the
-token.  Then, use `skupper link create` in the other to create a link.
+token.  Then, use `skupper link create` in the other to create a
+link.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 skupper token create ~/secret.token
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ skupper token create ~/secret.token
 Token written to ~/secret.token
 ~~~
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 skupper link create ~/secret.token
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ skupper link create ~/secret.token
@@ -275,9 +289,9 @@ Site configured to link to https://10.105.193.154:8081/ed9c37f6-d78a-11ec-a8c7-0
 Check the status of the link using 'skupper link status'.
 ~~~
 
-If your console sessions are on different machines, you may need to
-use `sftp` or a similar tool to transfer the token securely.  By
-default, tokens expire after a single use or 15 minutes after
+If your console sessions are on different machines, you may need
+to use `sftp` or a similar tool to transfer the token securely.
+By default, tokens expire after a single use or 15 minutes after
 creation.
 
 ## Step 7: Deploy the Kafka cluster
@@ -286,7 +300,7 @@ In the private namespace, use the `kubectl create` and `kubectl
 apply` commands with the listed YAML files to install the
 operator and deploy the cluster and topic.
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 kubectl create -f kafka-cluster/strimzi.yaml
@@ -304,24 +318,56 @@ Then, in the public namespace, use `kubectl get services` to
 check that the `cluster1-kafka-brokers` service appears after a
 moment.
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 skupper expose statefulset/cluster1-kafka --headless --port 9092
 ~~~
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 kubectl get services
 ~~~
+
+**Note:**
+
+By default, the Kafka bootstrap server returns broker addresses
+that include the Kubernetes namespace in their domain name.
+When, as in this example, the Kafka client is running in a
+namespace with a different name from that of the Kafka cluster,
+this prevents the client from resolving the Kafka brokers.
+
+To make the Kafka brokers reachable, set the `advertisedHost`
+property of each broker to a domain name that the Kafka client
+can resolve at the remote site.  In this example, this is
+achieved with the following listener configuration:
+
+~~~ yaml
+spec:
+  kafka:
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+        configuration:
+          brokers:
+            - broker: 0
+              advertisedHost: cluster1-kafka-0.cluster1-kafka-brokers
+~~~
+
+See [Advertised addresses for brokers][advertised-addresses] for
+more information.
+
+[advertised-addresses]: https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-broker-reference
 
 ## Step 9: Deploy the application services
 
 In the public namespace, use the `kubectl apply` command with
 the listed YAML files to install the application services.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 kubectl apply -f order-processor/kubernetes.yaml
@@ -331,21 +377,22 @@ kubectl apply -f frontend/kubernetes.yaml
 
 ## Step 10: Test the application
 
-Now we're ready to try it out.  Use `kubectl get service/frontend` to
-look up the external IP of the frontend service.  Then use `curl` or a
-similar tool to request the `/api/health` endpoint at that address.
+Now we're ready to try it out.  Use `kubectl get service/frontend`
+to look up the external IP of the frontend service.  Then use
+`curl` or a similar tool to request the `/api/health` endpoint at
+that address.
 
 **Note:** The `<external-ip>` field in the following commands is a
 placeholder.  The actual value is an IP address.
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 kubectl get service/frontend
 curl http://<external-ip>:8080/api/health
 ~~~
 
-Sample output:
+_Sample output:_
 
 ~~~ console
 $ kubectl get service/frontend
@@ -359,12 +406,46 @@ OK
 If everything is in order, you can now access the web interface by
 navigating to `http://<external-ip>:8080/` in your browser.
 
+## Accessing the web console
+
+Skupper includes a web console you can use to view the application
+network.  To access it, use `skupper status` to look up the URL of
+the web console.  Then use `kubectl get
+secret/skupper-console-users` to look up the console admin
+password.
+
+**Note:** The `<console-url>` and `<password>` fields in the
+following commands are placeholders.  The actual values are
+specific to your environment.
+
+_**Console for public:**_
+
+~~~ shell
+skupper status
+kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+~~~
+
+_Sample output:_
+
+~~~ console
+$ skupper status
+Skupper is enabled for namespace "public" in interior mode. It is connected to 1 other site. It has 1 exposed service.
+The site console url is: <console-url>
+The credentials for internal console-auth mode are held in secret: 'skupper-console-users'
+
+$ kubectl get secret/skupper-console-users -o jsonpath={.data.admin} | base64 -d
+<password>
+~~~
+
+Navigate to `<console-url>` in your browser.  When prompted, log
+in as user `admin` and enter the password.
+
 ## Cleaning up
 
-To remove Skupper and the other resources from this exercise, use the
-following commands.
+To remove Skupper and the other resources from this exercise, use
+the following commands.
 
-**Console for _private_:**
+_**Console for private:**_
 
 ~~~ shell
 skupper delete
@@ -372,7 +453,7 @@ kubectl delete -f kafka-cluster/cluster1.yaml
 kubectl delete -f kafka-cluster/strimzi.yaml
 ~~~
 
-**Console for _public_:**
+_**Console for public:**_
 
 ~~~ shell
 skupper delete
@@ -382,5 +463,6 @@ kubectl delete -f order-processor/kubernetes.yaml
 ~~~
 
 ## Next steps
+
 
 Check out the other [examples][examples] on the Skupper website.

@@ -70,6 +70,38 @@ steps:
       public:
         - run: kubectl get services
           await: [service/cluster1-kafka-brokers]
+    postamble: |
+      **Note:**
+
+      By default, the Kafka bootstrap server returns broker addresses
+      that include the Kubernetes namespace in their domain name.
+      When, as in this example, the Kafka client is running in a
+      namespace with a different name from that of the Kafka cluster,
+      this prevents the client from resolving the Kafka brokers.
+
+      To make the Kafka brokers reachable, set the `advertisedHost`
+      property of each broker to a domain name that the Kafka client
+      can resolve at the remote site.  In this example, this is
+      achieved with the following listener configuration:
+
+      ~~~ yaml
+      spec:
+        kafka:
+          listeners:
+            - name: plain
+              port: 9092
+              type: internal
+              tls: false
+              configuration:
+                brokers:
+                  - broker: 0
+                    advertisedHost: cluster1-kafka-0.cluster1-kafka-brokers
+      ~~~
+
+      See [Advertised addresses for brokers][advertised-addresses] for
+      more information.
+
+      [advertised-addresses]: https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-broker-reference
   - title: Deploy the application services
     preamble: |
       In the public namespace, use the `kubectl apply` command with
