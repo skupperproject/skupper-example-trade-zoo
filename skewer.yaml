@@ -31,7 +31,6 @@ overview: |
   to represent the private data center and public cloud.
 
   [strimzi]: https://strimzi.io/
-  [quarkus]: https://quarkus.io/
 sites:
   public:
     kubeconfig: ~/.kube/config-public
