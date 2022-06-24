@@ -25,11 +25,10 @@ Add the Skewer code as a subrepo in your example project:
     cd project-dir/
     git subrepo clone https://github.com/skupperproject/skewer subrepos/skewer
 
-Symlink the Skewer libraries into your `python` directory:
+Symlink the Skewer library into your `python` directory:
 
     mkdir -p python
     ln -s ../subrepos/skewer/python/skewer.py python/skewer.py
-    ln -s ../subrepos/skewer/python/plano.py python/plano.py
 
 Symlink the `plano` command into the root of your project.  Symlink
 the standard `config/.planofile` as `.planofile` in the root as well:

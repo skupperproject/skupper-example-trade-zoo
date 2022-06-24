@@ -53,7 +53,7 @@ def test(app):
 @command
 def update_workflow(app):
     """
-    Update the GitHub actions workflow file
+    Update the GitHub Actions workflow file
     """
 
     from_file = join("subrepos", "skewer", "config", ".github", "workflows", "main.yaml")
