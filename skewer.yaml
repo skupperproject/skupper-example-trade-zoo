@@ -55,20 +55,6 @@ steps:
         - run: kubectl create -f kafka-cluster/strimzi.yaml
         - run: kubectl apply -f kafka-cluster/cluster1.yaml
         - run: kubectl wait --for condition=ready --timeout 900s kafka/cluster1
-  - title: Expose the Kafka cluster
-    preamble: |
-      In the private namespace, use `skupper expose` with the
-      `--headless` option to expose the Kafka cluster as a headless
-      service on the Skupper network.
-
-      Then, in the public namespace, use `kubectl get service` to
-      check that the `cluster1-kafka-brokers` service appears after a
-      moment.
-    commands:
-      private:
-        - run: skupper expose statefulset/cluster1-kafka --headless --port 9092
-      public:
-        - run: kubectl get service/cluster1-kafka-brokers
     postamble: |
       **Note:**
 
@@ -101,6 +87,20 @@ steps:
       more information.
 
       [advertised-addresses]: https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-broker-reference
+  - title: Expose the Kafka cluster
+    preamble: |
+      In the private namespace, use `skupper expose` with the
+      `--headless` option to expose the Kafka cluster as a headless
+      service on the Skupper network.
+
+      Then, in the public namespace, use `kubectl get service` to
+      check that the `cluster1-kafka-brokers` service appears after a
+      moment.
+    commands:
+      private:
+        - run: skupper expose statefulset/cluster1-kafka --headless --port 9092
+      public:
+        - run: kubectl get service/cluster1-kafka-brokers
   - title: Deploy the application services
     preamble: |
       In the public namespace, use the `kubectl apply` command with

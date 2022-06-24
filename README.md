@@ -308,28 +308,6 @@ kubectl apply -f kafka-cluster/cluster1.yaml
 kubectl wait --for condition=ready --timeout 900s kafka/cluster1
 ~~~
 
-## Step 8: Expose the Kafka cluster
-
-In the private namespace, use `skupper expose` with the
-`--headless` option to expose the Kafka cluster as a headless
-service on the Skupper network.
-
-Then, in the public namespace, use `kubectl get service` to
-check that the `cluster1-kafka-brokers` service appears after a
-moment.
-
-_**Console for private:**_
-
-~~~ shell
-skupper expose statefulset/cluster1-kafka --headless --port 9092
-~~~
-
-_**Console for public:**_
-
-~~~ shell
-kubectl get service/cluster1-kafka-brokers
-~~~
-
 **Note:**
 
 By default, the Kafka bootstrap server returns broker addresses
@@ -361,6 +339,28 @@ See [Advertised addresses for brokers][advertised-addresses] for
 more information.
 
 [advertised-addresses]: https://strimzi.io/docs/operators/in-development/configuring.html#property-listener-config-broker-reference
+
+## Step 8: Expose the Kafka cluster
+
+In the private namespace, use `skupper expose` with the
+`--headless` option to expose the Kafka cluster as a headless
+service on the Skupper network.
+
+Then, in the public namespace, use `kubectl get service` to
+check that the `cluster1-kafka-brokers` service appears after a
+moment.
+
+_**Console for private:**_
+
+~~~ shell
+skupper expose statefulset/cluster1-kafka --headless --port 9092
+~~~
+
+_**Console for public:**_
+
+~~~ shell
+kubectl get service/cluster1-kafka-brokers
+~~~
 
 ## Step 9: Deploy the application services
 
