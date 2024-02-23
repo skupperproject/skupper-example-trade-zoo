@@ -17,21 +17,25 @@
 # under the License.
 #
 
-FROM python:alpine AS build
+from plano import *
 
-RUN apk add --no-cache gcc librdkafka-dev musl-dev
-RUN pip install --no-cache-dir confluent-kafka starlette sse_starlette uvicorn
+image_tag = "quay.io/skupper/trade-zoo-order-processor"
 
-FROM python:alpine AS run
+@command
+def build(no_cache=False):
+    no_cache_arg = "--no-cache" if no_cache else ""
 
-RUN apk add --no-cache librdkafka
+    run(f"podman build {no_cache_arg} --format docker -t {image_tag} .")
 
-RUN adduser -S fritz -G root
-USER fritz
+@command
+def run_():
+    run(f"podman run --net host {image_tag}")
 
-COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --chown=fritz:root python /home/fritz/python
-COPY --chown=fritz:root static /home/fritz/static
+@command
+def debug():
+    run(f"podman run -it --net host --entrypoint /bin/sh {image_tag}")
 
-WORKDIR /home/fritz
-ENTRYPOINT ["python", "python/main.py"]
+@command
+def push():
+    run("podman login quay.io")
+    run(f"podman push {image_tag}")
