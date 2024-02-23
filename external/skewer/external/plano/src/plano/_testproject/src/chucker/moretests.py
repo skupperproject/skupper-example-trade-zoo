@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,11 +17,8 @@
 # under the License.
 #
 
-import sys
+from plano import *
 
-sys.path.insert(0, "python")
-
-from plano import PlanoCommand
-
-if __name__ == "__main__":
-    PlanoCommand().main()
+@test
+def hello_again():
+    print("Hello again")

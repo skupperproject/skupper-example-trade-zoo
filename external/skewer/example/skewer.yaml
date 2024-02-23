@@ -1,0 +1,37 @@
+title: Skupper Hello World
+subtitle: A minimal HTTP application deployed across Kubernetes clusters using Skupper
+overview: |
+  An overview
+prerequisites: |
+  Some prerequisites
+sites:
+  west:
+    title: West
+    platform: kubernetes
+    namespace: west
+    env:
+      KUBECONFIG: ~/.kube/config-west
+  east:
+    title: East
+    platform: kubernetes
+    namespace: east
+    env:
+      KUBECONFIG: ~/.kube/config-east
+steps:
+  - standard: install_the_skupper_command_line_tool
+  - standard: kubernetes/set_up_your_namespaces
+  - standard: hello_world/deploy_the_frontend_and_backend
+  - standard: kubernetes/create_your_sites
+  - standard: kubernetes/link_your_sites
+  - title: Fail on demand
+    commands:
+      west:
+        - run: |
+            if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
+  - standard: hello_world/expose_the_backend
+  - standard: hello_world/access_the_frontend
+  - standard: hello_world/cleaning_up
+summary: |
+  A summary
+next_steps: |
+  Some next steps

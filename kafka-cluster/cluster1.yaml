@@ -4,7 +4,7 @@ metadata:
   name: cluster1
 spec:
   kafka:
-    version: 2.8.0
+    version: 3.4.0
     replicas: 1
     listeners:
       - name: plain
@@ -15,18 +15,68 @@ spec:
           brokers:
             - broker: 0
               advertisedHost: cluster1-kafka-0.cluster1-kafka-brokers
+      - name: tls
+        port: 9093
+        type: internal
+        tls: true
     config:
       offsets.topic.replication.factor: 1
       transaction.state.log.replication.factor: 1
       transaction.state.log.min.isr: 1
-      log.message.format.version: "2.8"
-      inter.broker.protocol.version: "2.8"
+      default.replication.factor: 1
+      min.insync.replicas: 1
+      inter.broker.protocol.version: "3.4"
     storage:
       type: ephemeral
   zookeeper:
     replicas: 1
     storage:
       type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+# ---
+# apiVersion: kafka.strimzi.io/v1beta2
+# kind: KafkaTopic
+# metadata:
+#   name: topic1
+#   labels:
+#     strimzi.io/cluster: cluster1
+# spec:
+#   partitions: 1
+#   replicas: 1
+#   config:
+#     retention.ms: 1000
+#     segment.bytes: 104857600
+# apiVersion: kafka.strimzi.io/v1beta2
+# kind: Kafka
+# metadata:
+#   name: cluster1
+# spec:
+#   kafka:
+#     version: 3.4.0
+#     replicas: 1
+#     listeners:
+#       - name: plain
+#         port: 9092
+#         type: internal
+#         tls: false
+#         configuration:
+#           brokers:
+#             - broker: 0
+#               advertisedHost: cluster1-kafka-0.cluster1-kafka-brokers
+#     config:
+#       offsets.topic.replication.factor: 1
+#       transaction.state.log.replication.factor: 1
+#       transaction.state.log.min.isr: 1
+#       log.message.format.version: "2.8"
+#       inter.broker.protocol.version: "2.8"
+#     storage:
+#       type: ephemeral
+#   zookeeper:
+#     replicas: 1
+#     storage:
+#       type: ephemeral
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic

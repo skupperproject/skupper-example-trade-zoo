@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,11 +17,8 @@
 # under the License.
 #
 
-import sys
+from .main import *
+from .main import _default_sigterm_handler
 
-sys.path.insert(0, "python")
-
-from plano import PlanoCommand
-
-if __name__ == "__main__":
-    PlanoCommand().main()
+from .command import *
+from .test import *
